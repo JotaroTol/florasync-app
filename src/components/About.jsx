@@ -94,17 +94,10 @@ export default function About() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="card-glass p-6 text-center flex flex-col items-center">
-            <Heart size={32} className="text-rose-400 mb-3" />
-            <h3 className="text-white font-semibold mb-2">Dibuat dengan Cinta</h3>
-            <p className="text-sm text-gray-400">Dirancang khusus untuk menghadirkan pengalaman pengguna yang premium, cepat, dan indah.</p>
-          </div>
-          <div className="card-glass p-6 text-center flex flex-col items-center">
-            <Globe size={32} className="text-blue-400 mb-3" />
-            <h3 className="text-white font-semibold mb-2">Sinkronisasi Cloud</h3>
-            <p className="text-sm text-gray-400">Semua data Anda tersimpan dengan aman di database cloud Supabase secara real-time, memastikan data selalu sinkron dan dapat diakses dari mana saja.</p>
-          </div>
+        <div className="card-glass p-6 text-center flex flex-col items-center">
+          <Globe size={32} className="text-blue-400 mb-3" />
+          <h3 className="text-white font-semibold mb-2">Sinkronisasi Cloud</h3>
+          <p className="text-sm text-gray-400">Semua data Anda tersimpan dengan aman di database cloud Supabase secara real-time, memastikan data selalu sinkron dan dapat diakses dari mana saja.</p>
         </div>
         <footer className="mt-8 text-center text-xs text-gray-500">
           <p>FloraSync © 2026 • Developed with 💚 by <span className="text-emerald-400 font-medium">JotaroTol</span></p>
