@@ -48,10 +48,10 @@ export default function Sidebar({ activeTab }) {
       </button>
 
       {/* Brand/Logo Area - mb-3 for compact spacing */}
-      <div className={`mb-3 flex flex-col shrink-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed ? 'pl-4 pr-2' : 'pl-6 pr-6'}`}>
+      <div className={`mb-3 flex flex-col shrink-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed ? 'pl-5 pr-2' : 'pl-6 pr-6'}`}>
         <div className={`flex items-center text-emerald-500 font-bold text-2xl relative transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed ? 'gap-0' : 'gap-3'}`}>
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center shrink-0 hover:bg-emerald-500/20 hover:scale-105 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
-            <Leaf size={24} className="shrink-0 text-emerald-400 animate-[pulse_3s_infinite]" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center shrink-0 hover:bg-emerald-500/20 hover:scale-105 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
+            <Leaf size={20} className="shrink-0 text-emerald-400 animate-[pulse_3s_infinite]" />
           </div>
           <div className={`flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
             isCollapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-40 opacity-100'
