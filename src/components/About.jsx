@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.5) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.6) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,14 +49,30 @@ export default function About() {
 
             <h3 className="text-lg font-semibold text-white mt-8 mb-3">Riwayat Pembaruan (Changelog)</h3>
             <div className="space-y-4">
+              {/* v1.1.6 - Bright Emerald (Latest) */}
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.4 (Collapsible Sidebar & Logo Fix)</span>
+                  <span className="font-bold text-emerald-400">v1.1.6 (Perfect Transitions & Z-Index Fix)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Pengembangan fitur **Bilah Samping Lipat (Collapsible Sidebar)** yang dapat dikecilkan secara dinamis untuk menyisakan logo dan ikon navigasi saja, dengan penyimpanan preferensi di localStorage.</li>
-                  <li>Perbaikan rujukan ikon web (favicon) pada berkas <code>index.html</code> dari <code>/vite.svg</code> ke <code>/favicon.svg</code> sehingga logo web resmi langsung muncul di tab browser.</li>
+                  <li>Penyempurnaan animasi transisi tutup-buka bilah samping agar berjalan mulus tanpa adanya hentakan tata letak.</li>
+                  <li>Penyelarasan posisi logo agar berada tepat di tengah-tengah saat bilah samping dikecilkan.</li>
+                  <li>Penghapusan bilah gulir (scroll) pada bilah samping demi tampilan yang lebih minimalis dan bersih.</li>
+                  <li>Perbaikan penumpukan z-index layout sehingga tombol kendali tidak tertutup atau terpotong oleh header utama.</li>
+                  <li>Penataan ulang daftar riwayat pembaruan agar hanya menampilkan 2 rilis terbaru secara bawaan.</li>
+                </ul>
+              </div>
+
+              {/* v1.1.5 - Faded Emerald border and text (Recent) */}
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.5 (ZPT Form & Collapsible Log)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
+                  <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (<em>collapsible changelog</em>) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
                 </ul>
               </div>
 
@@ -64,7 +80,17 @@ export default function About() {
                 <>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.1.3 (ZPT Form & Collapsible Log)</span>
+                      <span className="font-bold text-emerald-400/30">v1.1.4 (Collapsible Sidebar & Logo Fix)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Pengembangan fitur <strong>Bilah Samping Lipat (Collapsible Sidebar)</strong> yang dapat dikecilkan secara dinamis untuk menyisakan logo dan ikon navigasi saja, dengan penyimpanan preferensi di localStorage.</li>
+                      <li>Perbaikan rujukan ikon web (favicon) pada berkas <code>index.html</code> dari <code>/vite.svg</code> ke <code>/favicon.svg</code> sehingga logo web resmi langsung muncul di tab browser.</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/30">v1.1.3 (ZPT Form & Collapsible Log)</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -74,7 +100,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.1.2 (Instant Updates)</span>
+                      <span className="font-bold text-emerald-400/30">v1.1.2 (Instant Updates)</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -85,7 +111,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.1.1 (Security & Stability)</span>
+                      <span className="font-bold text-emerald-400/30">v1.1.1 (Security & Stability)</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -97,7 +123,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.1.0 (Cloud & Deploy)</span>
+                      <span className="font-bold text-emerald-400/30">v1.1.0 (Cloud & Deploy)</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -110,7 +136,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.0.2-beta</span>
+                      <span className="font-bold text-emerald-400/30">v1.0.2-beta</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -120,7 +146,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.0.1-beta</span>
+                      <span className="font-bold text-emerald-400/30">v1.0.1-beta</span>
                       <span className="text-xs text-gray-500">25 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -131,7 +157,7 @@ export default function About() {
                   </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-emerald-400/50">v1.0.0-beta</span>
+                      <span className="font-bold text-emerald-400/30">v1.0.0-beta</span>
                       <span className="text-xs text-gray-500">23 Juni 2026</span>
                     </div>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-500">
