@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.4) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.5) • By JotaroTol</p>
             </div>
           </div>
 
@@ -59,55 +59,55 @@ export default function About() {
                   <li>Perbaikan rujukan ikon web (favicon) pada berkas <code>index.html</code> dari <code>/vite.svg</code> ke <code>/favicon.svg</code> sehingga logo web resmi langsung muncul di tab browser.</li>
                 </ul>
               </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.1.3 (ZPT Form & Collapsible Log)</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
-                  <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (*collapsible changelog*) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
-                </ul>
-              </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.1.2 (Instant Updates)</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Implementasi mekanisme <em>local pub-sub</em> pada basis data proxy (<code>db.js</code>) untuk mendeteksi operasi tulis (<em>insert, update, delete</em>) secara instan.</li>
-                  <li>Integrasi sistem pembaruan instan pada <em>query hook</em> agar data yang baru ditambahkan langsung muncul di layar tanpa perlu menyegarkan (<em>refresh</em>) browser.</li>
-                  <li>Penyediaan sistem re-fetch cadangan otomatis (*zero-latency fallback*) yang aktif meskipun fitur Realtime di Supabase belum diaktifkan.</li>
-                </ul>
-              </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.1.1 (Security & Stability)</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Penghapusan teks bantuan kredensial bawaan pada halaman masuk demi keamanan produksi.</li>
-                  <li>Perbaikan bug <em>real-time query hook</em> agar tidak mengosongkan data secara tiba-tiba saat terjadi kendala jaringan internet sementara.</li>
-                  <li>Pembaruan tata letak halaman Tentang Aplikasi dengan memfokuskan visual pada sistem Sinkronisasi Cloud.</li>
-                  <li>Peningkatan peran akun admin lama menjadi peran pemilik utama (*owner*) penuh langsung di database.</li>
-                </ul>
-              </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.1.0</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Migrasi penuh sistem database dari penyimpanan lokal IndexedDB ke <strong>Supabase Cloud Database</strong>.</li>
-                  <li>Implementasi sinkronisasi data secara <em>real-time</em> lintas perangkat bagi seluruh pengguna.</li>
-                  <li>Penyediaan variabel lingkungan terenkripsi dan konfigurasi routing SPA untuk deployment di <strong>Vercel</strong>.</li>
-                  <li>Peningkatan keamanan akun dengan pembagian peran (RBAC) yang terintegrasi di cloud.</li>
-                  <li>Pengembangan dan publikasi web diselesaikan oleh <strong>JotaroTol</strong>.</li>
-                </ul>
-              </div>
 
               {showAllChangelog && (
                 <>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.1.3 (ZPT Form & Collapsible Log)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
+                      <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (<em>collapsible changelog</em>) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.1.2 (Instant Updates)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Implementasi mekanisme <em>local pub-sub</em> pada basis data proxy (<code>db.js</code>) untuk mendeteksi operasi tulis (<em>insert, update, delete</em>) secara instan.</li>
+                      <li>Integrasi sistem pembaruan instan pada <em>query hook</em> agar data yang baru ditambahkan langsung muncul di layar tanpa perlu menyegarkan (<em>refresh</em>) browser.</li>
+                      <li>Penyediaan sistem re-fetch cadangan otomatis (*zero-latency fallback*) yang aktif meskipun fitur Realtime di Supabase belum diaktifkan.</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.1.1 (Security & Stability)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Penghapusan teks bantuan kredensial bawaan pada halaman masuk demi keamanan produksi.</li>
+                      <li>Perbaikan bug <em>real-time query hook</em> agar tidak mengosongkan data secara tiba-tiba saat terjadi kendala jaringan internet sementara.</li>
+                      <li>Pembaruan tata letak halaman Tentang Aplikasi dengan memfokuskan visual pada sistem Sinkronisasi Cloud.</li>
+                      <li>Peningkatan peran akun admin lama menjadi peran pemilik utama (*owner*) penuh langsung di database.</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.1.0 (Cloud & Deploy)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Migrasi penuh sistem database dari penyimpanan lokal IndexedDB ke <strong>Supabase Cloud Database</strong>.</li>
+                      <li>Implementasi sinkronisasi data secara <em>real-time</em> lintas perangkat bagi seluruh pengguna.</li>
+                      <li>Penyediaan variabel lingkungan terenkripsi dan konfigurasi routing SPA untuk deployment di <strong>Vercel</strong>.</li>
+                      <li>Peningkatan keamanan akun dengan pembagian peran (RBAC) yang terintegrasi di cloud.</li>
+                      <li>Pengembangan dan publikasi web diselesaikan oleh <strong>JotaroTol</strong>.</li>
+                    </ul>
+                  </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-bold text-emerald-400/50">v1.0.2-beta</span>
@@ -146,7 +146,7 @@ export default function About() {
                 onClick={() => setShowAllChangelog(!showAllChangelog)}
                 className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition-all mt-2 inline-flex items-center gap-1.5 outline-none border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-emerald-500/10 active:scale-95 w-fit"
               >
-                {showAllChangelog ? 'Tampilkan Lebih Sedikit' : 'Tampilkan Versi Terdahulu (Beta)'}
+                {showAllChangelog ? 'Tampilkan Lebih Sedikit' : 'Tampilkan Versi Terdahulu (Beta & Cloud)'}
               </button>
             </div>
           </div>
