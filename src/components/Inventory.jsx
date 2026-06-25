@@ -20,6 +20,13 @@ export default function Inventory() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
+  const [activePreviewImage, setActivePreviewImage] = useState(null);
+
+  useEffect(() => {
+    if (previewImage) {
+      setActivePreviewImage(previewImage);
+    }
+  }, [previewImage]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null); // null means adding new
@@ -353,15 +360,35 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setPreviewImage(null)}>
-          <img src={previewImage} alt="Preview" className="max-w-full max-h-full rounded-xl shadow-2xl object-contain border border-white/10" />
-          <button className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors bg-black/50 p-2 rounded-full backdrop-blur-md">
-            <X size={24} />
+      {/* Image Preview Modal - Smooth macOS/iOS-style spring zoom transition */}
+      <div 
+        className={`fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.3,0.64,1)] ${
+          previewImage ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'
+        }`}
+        onClick={() => setPreviewImage(null)}
+      >
+        <div 
+          className={`relative max-w-full max-h-full transition-all duration-500 ease-[cubic-bezier(0.34,1.3,0.64,1)] transform ${
+            previewImage ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-4 opacity-0'
+          }`}
+          onClick={e => e.stopPropagation()}
+        >
+          {activePreviewImage && (
+            <img 
+              src={activePreviewImage} 
+              alt="Preview" 
+              className="max-w-[90vw] max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] object-contain border border-white/10" 
+            />
+          )}
+          <button 
+            type="button"
+            onClick={() => setPreviewImage(null)}
+            className="absolute -top-12 right-0 text-gray-400 hover:text-white transition-all duration-300 bg-white/5 hover:bg-white/10 border border-white/10 p-2 rounded-full backdrop-blur-md hover:scale-110 active:scale-95"
+          >
+            <X size={20} />
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
