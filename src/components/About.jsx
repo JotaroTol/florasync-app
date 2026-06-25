@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.6) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.7) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,10 +49,26 @@ export default function About() {
 
             <h3 className="text-lg font-semibold text-white mt-8 mb-3">Riwayat Pembaruan (Changelog)</h3>
             <div className="space-y-4">
-              {/* v1.1.6 - Bright Emerald (Latest) */}
+              {/* v1.1.7 - Bright Emerald (Latest) */}
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.6 (Perfect Transitions & Z-Index Fix)</span>
+                  <span className="font-bold text-emerald-400">v1.1.7 (Thread-Safe Forms & Dynamic Categories)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Pencegahan duplikasi data akibat klik ganda (*double-click*) menggunakan mekanisme penguncian sinkron (<code>useRef</code>) pada seluruh formulir simpan aplikasi.</li>
+                  <li>Implementasi indikator pemuatan (*loading spinner*) dan penonaktifan tombol secara responsif selama proses komunikasi dengan Supabase Cloud.</li>
+                  <li>Pengembangan fitur <strong>Kelola Kategori</strong> mandiri di halaman Gudang untuk menambahkan dan menghapus kategori produk secara dinamis.</li>
+                  <li>Penambahan validasi penghapusan kategori (kunci pengaman) jika kategori tersebut masih digunakan oleh produk lain di inventaris.</li>
+                  <li>Sinkronisasi otomatis daftar kategori kustom ke halaman log aktivitas dan penyaringan produk di profil detail tanaman.</li>
+                  <li>Penyediaan sistem deteksi dan penanganan galat (*fallback*) otomatis jika tabel kategori belum terpasang di Supabase, lengkap dengan petunjuk SQL editor interaktif.</li>
+                </ul>
+              </div>
+
+              {/* v1.1.6 - Faded Emerald border and text (Recent) */}
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.6 (Perfect Transitions & Z-Index Fix)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -64,20 +80,19 @@ export default function About() {
                 </ul>
               </div>
 
-              {/* v1.1.5 - Faded Emerald border and text (Recent) */}
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.1.5 (ZPT Form & Collapsible Log)</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
-                  <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (<em>collapsible changelog</em>) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
-                </ul>
-              </div>
-
               {showAllChangelog && (
                 <>
+                  {/* v1.1.5 - Faded Emerald border and text (Moved to collapsible) */}
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/30">v1.1.5 (ZPT Form & Collapsible Log)</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
+                      <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (<em>collapsible changelog</em>) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
+                    </ul>
+                  </div>
                   <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-bold text-emerald-400/30">v1.1.4 (Collapsible Sidebar & Logo Fix)</span>
