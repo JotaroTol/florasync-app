@@ -21,7 +21,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.0) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.1) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,7 +49,19 @@ export default function About() {
             <div className="space-y-4">
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.0</span>
+                  <span className="font-bold text-emerald-400">v1.1.1 (Security & Stability)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Penghapusan teks bantuan kredensial bawaan pada halaman masuk demi keamanan produksi.</li>
+                  <li>Perbaikan bug <em>real-time query hook</em> agar tidak mengosongkan data secara tiba-tiba saat terjadi kendala jaringan internet sementara.</li>
+                  <li>Pembaruan tata letak halaman Tentang Aplikasi dengan memfokuskan visual pada sistem Sinkronisasi Cloud.</li>
+                  <li>Peningkatan peran akun admin lama menjadi peran pemilik utama (*owner*) penuh langsung di database.</li>
+                </ul>
+              </div>
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.0</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
