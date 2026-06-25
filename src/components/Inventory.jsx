@@ -50,7 +50,8 @@ export default function Inventory() {
     unit: 'gram',
     photoUrl: '',
     zatAktif: '',
-    golongan: 'Menengah'
+    golongan: 'Menengah',
+    sifat: [] // New field for multi-select additional properties
   });
 
   const [categories, setCategories] = useState([]);
@@ -64,6 +65,8 @@ export default function Inventory() {
   const [editCategoryName, setEditCategoryName] = useState('');
   const [editCategoryNeedsGolongan, setEditCategoryNeedsGolongan] = useState(false);
   const [editCategoryGolonganOptions, setEditCategoryGolonganOptions] = useState('');
+  const [editCategoryNeedsSifat, setEditCategoryNeedsSifat] = useState(false);
+  const [editCategorySifatOptions, setEditCategorySifatOptions] = useState('');
 
   const getCategoryGolonganConfig = (cat) => {
     const needsGolonganDefault = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(cat.name);
@@ -71,10 +74,13 @@ export default function Inventory() {
     
     const optionsDefault = needsGolongan ? 'Ringan, Menengah, Berat' : '';
     const optionsStr = cat.golonganOptions !== undefined && cat.golonganOptions !== null ? cat.golonganOptions : optionsDefault;
-    
     const options = optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(s => s) : [];
     
-    return { needsGolongan, options, optionsStr };
+    const needsSifat = cat.needsSifat !== undefined && cat.needsSifat !== null ? cat.needsSifat : false;
+    const sifatOptionsStr = cat.sifatOptions !== undefined && cat.sifatOptions !== null ? cat.sifatOptions : '';
+    const sifatOptions = sifatOptionsStr ? sifatOptionsStr.split(',').map(s => s.trim()).filter(s => s) : [];
+    
+    return { needsGolongan, options, optionsStr, needsSifat, sifatOptions, sifatOptionsStr };
   };
 
   const handleStartEditCategory = (cat) => {
@@ -84,6 +90,8 @@ export default function Inventory() {
     const config = getCategoryGolonganConfig(cat);
     setEditCategoryNeedsGolongan(config.needsGolongan);
     setEditCategoryGolonganOptions(config.optionsStr);
+    setEditCategoryNeedsSifat(config.needsSifat);
+    setEditCategorySifatOptions(config.sifatOptionsStr);
   };
 
   const handleSaveCategoryEdit = async (e) => {
@@ -102,7 +110,9 @@ export default function Inventory() {
       const updates = {
         name: nameTrimmed,
         needsGolongan: editCategoryNeedsGolongan,
-        golonganOptions: editCategoryNeedsGolongan ? editCategoryGolonganOptions.trim() : ''
+        golonganOptions: editCategoryNeedsGolongan ? editCategoryGolonganOptions.trim() : '',
+        needsSifat: editCategoryNeedsSifat,
+        sifatOptions: editCategoryNeedsSifat ? editCategorySifatOptions.trim() : ''
       };
       
       const { error } = await supabase.from('categories').update(updates).eq('id', editingCategory.id);
@@ -252,12 +262,22 @@ export default function Inventory() {
         unit: item.unit || 'gram',
         photoUrl: item.photoUrl || '',
         zatAktif: item.zatAktif || '',
-        golongan: item.golongan || 'Menengah'
+        golongan: item.golongan || '',
+        sifat: item.sifat ? item.sifat.split(',').map(s => s.trim()).filter(s => s) : []
       });
       setEditMode(null); // default for edit is not changing stock
     } else {
       setEditingItem(null);
-      setFormData({ name: '', category: categories[0]?.name || 'Pupuk', stock: '', unit: 'gram', photoUrl: '', zatAktif: '', golongan: 'Menengah' });
+      setFormData({ 
+        name: '', 
+        category: categories[0]?.name || 'Pupuk', 
+        stock: '', 
+        unit: 'gram', 
+        photoUrl: '', 
+        zatAktif: '', 
+        golongan: '',
+        sifat: []
+      });
     }
     setIsModalOpen(true);
   };
@@ -300,7 +320,8 @@ export default function Inventory() {
         photoUrl: formData.photoUrl,
         stock: finalStock,
         zatAktif: config.needsGolongan ? formData.zatAktif : '',
-        golongan: config.needsGolongan ? (formData.golongan || config.options[0] || '') : ''
+        golongan: config.needsGolongan ? (formData.golongan || config.options[0] || '') : '',
+        sifat: config.needsSifat ? formData.sifat.join(', ') : ''
       };
 
       if (editingItem) {
@@ -408,17 +429,26 @@ export default function Inventory() {
                       <span>{item.name}</span>
                     </td>
                     <td className="p-4 text-sm text-gray-400">
-                      {item.category}
-                      {item.golongan && (() => {
-                        const catObj = categories.find(c => c.name === item.category);
-                        const config = catObj ? getCategoryGolonganConfig(catObj) : { needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(item.category) };
-                        if (!config.needsGolongan) return null;
-                        return (
-                          <span className="ml-2 px-2 py-0.5 rounded-full bg-white/5 text-xs text-emerald-400/80 border border-emerald-500/20">
-                            {item.golongan}
-                          </span>
-                        );
-                      })()}
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">{item.category}</span>
+                        <div className="flex flex-wrap gap-1.5 mt-0.5">
+                          {item.golongan && (() => {
+                            const catObj = categories.find(c => c.name === item.category);
+                            const config = catObj ? getCategoryGolonganConfig(catObj) : { needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(item.category) };
+                            if (!config.needsGolongan) return null;
+                            return (
+                              <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-emerald-400/80 border border-emerald-500/20 select-none">
+                                {item.golongan}
+                              </span>
+                            );
+                          })()}
+                          {item.sifat && item.sifat.split(',').map(s => s.trim()).filter(s => s).map(s => (
+                            <span key={s} className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-amber-400/80 border border-amber-500/20 select-none">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4 font-mono text-amber-400 font-semibold">{item.stock} <span className="text-xs text-gray-500">{item.unit || 'gram'}</span></td>
                     <td className="p-4">{getStatusBadge(item.stock)}</td>
@@ -500,35 +530,70 @@ export default function Inventory() {
                   ? getCategoryGolonganConfig(selectedCatObj) 
                   : { 
                       needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category),
-                      options: ['Ringan', 'Menengah', 'Berat']
+                      options: ['Ringan', 'Menengah', 'Berat'],
+                      needsSifat: false,
+                      sifatOptions: []
                     };
                 
-                if (!config.needsGolongan) return null;
+                if (!config.needsGolongan && !config.needsSifat) return null;
                 
                 return (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Zat Aktif</label>
-                      <input 
-                        type="text" 
-                        value={formData.zatAktif} 
-                        onChange={e => setFormData({...formData, zatAktif: e.target.value})} 
-                        placeholder="Contoh: Abamektin"
-                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none transition-all" 
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Tingkat / Golongan</label>
-                      <select 
-                        value={formData.golongan} 
-                        onChange={e => setFormData({...formData, golongan: e.target.value})} 
-                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
-                      >
-                        {config.options.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="flex flex-col gap-4">
+                    {config.needsGolongan && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Zat Aktif</label>
+                          <input 
+                            type="text" 
+                            value={formData.zatAktif} 
+                            onChange={e => setFormData({...formData, zatAktif: e.target.value})} 
+                            placeholder="Contoh: Abamektin"
+                            className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none transition-all" 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Tingkat / Golongan</label>
+                          <select 
+                            value={formData.golongan} 
+                            onChange={e => setFormData({...formData, golongan: e.target.value})} 
+                            className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
+                          >
+                            {config.options.map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {config.needsSifat && config.sifatOptions.length > 0 && (
+                      <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
+                          Sifat / Karakter Tambahan (Bisa Pilih Lebih Dari Satu)
+                        </label>
+                        <div className="flex flex-wrap gap-3 bg-forest-surface p-3 rounded-xl border border-white/5">
+                          {config.sifatOptions.map(opt => {
+                            const isChecked = formData.sifat.includes(opt);
+                            return (
+                              <label key={opt} className="flex items-center gap-2 text-sm text-gray-200 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={e => {
+                                    const nextSifat = e.target.checked
+                                      ? [...formData.sifat, opt]
+                                      : formData.sifat.filter(s => s !== opt);
+                                    setFormData({ ...formData, sifat: nextSifat });
+                                  }}
+                                  className="rounded bg-forest-bg border-white/10 text-amber-600 focus:ring-0 w-4 h-4 accent-amber-500"
+                                />
+                                <span>{opt}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -655,8 +720,12 @@ export default function Inventory() {
   name TEXT NOT NULL,
   "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   "needsGolongan" BOOLEAN DEFAULT FALSE,
-  "golonganOptions" TEXT DEFAULT ''
+  "golonganOptions" TEXT DEFAULT '',
+  "needsSifat" BOOLEAN DEFAULT FALSE,
+  "sifatOptions" TEXT DEFAULT ''
 );
+
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS "sifat" TEXT DEFAULT '';
 
 ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                 </div>
@@ -709,6 +778,40 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                       />
                       <p className="text-[10px] text-gray-500 mt-1">
                         Masukkan opsi golongan yang dipisahkan dengan tanda koma.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 py-1">
+                    <input
+                      type="checkbox"
+                      id="needsSifatCheckbox"
+                      checked={editCategoryNeedsSifat}
+                      onChange={e => setEditCategoryNeedsSifat(e.target.checked)}
+                      disabled={isSavingCategory}
+                      className="rounded bg-forest-surface border-white/10 text-emerald-600 focus:ring-0 w-4 h-4 accent-emerald-500"
+                    />
+                    <label htmlFor="needsSifatCheckbox" className="text-sm font-medium text-gray-200 cursor-pointer select-none">
+                      Butuh Sifat / Tipe Tambahan (Bisa Pilih Banyak)
+                    </label>
+                  </div>
+
+                  {editCategoryNeedsSifat && (
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">
+                        Pilihan Sifat Tambahan (Pisahkan dengan koma)
+                      </label>
+                      <input
+                        type="text"
+                        value={editCategorySifatOptions}
+                        onChange={e => setEditCategorySifatOptions(e.target.value)}
+                        placeholder="Contoh: Kontak, Sistemik"
+                        disabled={isSavingCategory}
+                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        required={editCategoryNeedsSifat}
+                      />
+                      <p className="text-[10px] text-gray-500 mt-1">
+                        Masukkan opsi sifat tambahan yang dipisahkan dengan tanda koma.
                       </p>
                     </div>
                   )}
