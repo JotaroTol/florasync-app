@@ -82,6 +82,8 @@ export default function PlantDetail() {
 
   const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
   const [generalNote, setGeneralNote] = useState('');
   const [activities, setActivities] = useState([]);
   
@@ -119,7 +121,22 @@ export default function PlantDetail() {
 
   if (!plant) return <div className="p-10">Loading...</div>;
 
-  const productCategories = ['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya'];
+  const [productCategories, setProductCategories] = useState(['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya']);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data, error } = await supabase.from('categories').select('name').eq('userId', user.id);
+        if (!error && data && data.length > 0) {
+          const names = data.map(c => c.name).sort((a, b) => a.localeCompare(b));
+          setProductCategories(names);
+        }
+      } catch (e) {
+        console.error("Failed to load categories in PlantDetail:", e);
+      }
+    };
+    loadCategories();
+  }, [user.id]);
   const filteredInventory = inventory.filter(i => i.category === prodCategoryFilter);
 
   // Compute Last Fertilized
@@ -368,117 +385,132 @@ export default function PlantDetail() {
   const handleSaveEvent = async (e) => {
     e.preventDefault();
     if (activities.length === 0 && !generalNote) return;
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
 
-    // Strict Date Validation (Can't log before sowing)
-    if (new Date(selectedDateStr) < new Date(plant.sownDate)) {
-      alert("Tanggal tidak valid: Tidak bisa mencatat sebelum tanggal semai!");
-      return;
-    }
+    try {
+      // Strict Date Validation (Can't log before sowing)
+      if (new Date(selectedDateStr) < new Date(plant.sownDate)) {
+        alert("Tanggal tidak valid: Tidak bisa mencatat sebelum tanggal semai!");
+        isSavingRef.current = false;
+        setIsSaving(false);
+        return;
+      }
 
-    // Handle Editing: Refund old stock, delete old event
-    if (editingEventId) {
-      const oldEvent = await db.events.get(editingEventId);
-      if (oldEvent && (oldEvent.type === 'history' || oldEvent.completed)) {
-        if (oldEvent.activities) {
-          for (const act of oldEvent.activities) {
-            if (act.type === 'produk' && act.productId) {
-              const item = await db.inventory.get(act.productId);
-              if (item) {
-                await db.inventory.update(item.id, { stock: item.stock + act.totalDose });
+      // Handle Editing: Refund old stock, delete old event
+      if (editingEventId) {
+        const oldEvent = await db.events.get(editingEventId);
+        if (oldEvent && (oldEvent.type === 'history' || oldEvent.completed)) {
+          if (oldEvent.activities) {
+            for (const act of oldEvent.activities) {
+              if (act.type === 'produk' && act.productId) {
+                const item = await db.inventory.get(act.productId);
+                if (item) {
+                  await db.inventory.update(item.id, { stock: item.stock + act.totalDose });
+                }
               }
             }
           }
         }
+        await db.events.delete(editingEventId);
       }
-      await db.events.delete(editingEventId);
-    }
 
-    // Auto Deduct Inventory if it's a history event (meaning we actually applied it)
-    if (eventType === 'history') {
+      // Auto Deduct Inventory if it's a history event (meaning we actually applied it)
+      if (eventType === 'history') {
+        for (const act of activities) {
+          if (act.type === 'produk' && act.productId) {
+            const item = await db.inventory.get(act.productId);
+            if (item) {
+              await db.inventory.update(item.id, { stock: Math.max(0, item.stock - act.totalDose) });
+            }
+          }
+        }
+      }
+
+      let updatedPlantData = {};
+
       for (const act of activities) {
-        if (act.type === 'produk' && act.productId) {
-          const item = await db.inventory.get(act.productId);
-          if (item) {
-            await db.inventory.update(item.id, { stock: Math.max(0, item.stock - act.totalDose) });
+        if (act.type === 'hama') {
+          updatedPlantData.status = 'pest';
+          updatedPlantData.statusText = 'Terkena Hama/Penyakit';
+        }
+        
+        if (act.type === 'produk' && ['Insektisida', 'Pestisida', 'Fungisida', 'Herbisida', 'Bakterisida'].includes(act.category)) {
+          // Hapus to-do evaluasi yang belum selesai sebelumnya
+          const existingEvals = events.filter(e => e.type === 'todo' && !e.completed && e.activities && e.activities.some(a => a.title === 'Evaluasi Hama/Penyakit'));
+          for (const ev of existingEvals) {
+            await db.events.delete(ev.id);
           }
-        }
-      }
-    }
 
-    let updatedPlantData = {};
-
-    for (const act of activities) {
-      if (act.type === 'hama') {
-        updatedPlantData.status = 'pest';
-        updatedPlantData.statusText = 'Terkena Hama/Penyakit';
-      }
-      
-      if (act.type === 'produk' && ['Insektisida', 'Pestisida', 'Fungisida', 'Herbisida', 'Bakterisida'].includes(act.category)) {
-        // Hapus to-do evaluasi yang belum selesai sebelumnya
-        const existingEvals = events.filter(e => e.type === 'todo' && !e.completed && e.activities && e.activities.some(a => a.title === 'Evaluasi Hama/Penyakit'));
-        for (const ev of existingEvals) {
-          await db.events.delete(ev.id);
+          const checkDate = new Date(new Date(selectedDateStr).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          await db.events.add({
+            userId: user.id,
+            plantId: plant.id,
+            date: checkDate,
+            type: 'todo',
+            generalNote: '',
+            completed: false,
+            activities: [{
+              type: 'perlakuan', 
+              title: `Evaluasi Hama/Penyakit`, 
+              note: `Cek kondisi tanaman: Apakah serangan hama/penyakit sudah teratasi setelah aplikasi produk ${act.name} pada ${selectedDateStr}?`
+            }]
+          });
         }
 
-        const checkDate = new Date(new Date(selectedDateStr).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        await db.events.add({
-          userId: user.id,
-          plantId: plant.id,
-          date: checkDate,
-          type: 'todo',
-          generalNote: '',
-          completed: false,
-          activities: [{
-            type: 'perlakuan', 
-            title: `Evaluasi Hama/Penyakit`, 
-            note: `Cek kondisi tanaman: Apakah serangan hama/penyakit sudah teratasi setelah aplikasi produk ${act.name} pada ${selectedDateStr}?`
-          }]
-        });
-      }
+        if (act.type === 'perlakuan' || act.type === 'panen') {
+          const title = act.title;
+          // Identify milestones
+          const milestoneKey = title === 'Semai' ? 'sownDate' : title === 'Pindah Tanam' ? 'plantedDate' : null;
+          const newPhase = title === 'Pindah Tanam' ? 'Vegetatif' : title === 'Fase Generatif' ? 'Generatif' : act.type === 'panen' ? 'Panen' : null;
 
-      if (act.type === 'perlakuan' || act.type === 'panen') {
-        const title = act.title;
-        // Identify milestones
-        const milestoneKey = title === 'Semai' ? 'sownDate' : title === 'Pindah Tanam' ? 'plantedDate' : null;
-        const newPhase = title === 'Pindah Tanam' ? 'Vegetatif' : title === 'Fase Generatif' ? 'Generatif' : act.type === 'panen' ? 'Panen' : null;
-
-        if (['Semai', 'Pindah Tanam', 'Fase Generatif'].includes(title)) {
-          const existing = events.find(e => e.activities && e.activities.some(a => a.title === title));
-          if (existing && existing.date !== selectedDateStr) {
-            if (!window.confirm(`Anda sudah mencatat "${title}" di tanggal ${existing.date}. Pindahkan ke tanggal ini dan hapus catatan lama?`)) {
-              return; // abort save entirely
-            } else {
-              const filteredActs = existing.activities.filter(a => a.title !== title);
-              if (filteredActs.length === 0 && !existing.generalNote) {
-                // Delete event if no other activities
-                db.events.delete(existing.id);
+          if (['Semai', 'Pindah Tanam', 'Fase Generatif'].includes(title)) {
+            const existing = events.find(e => e.activities && e.activities.some(a => a.title === title));
+            if (existing && existing.date !== selectedDateStr) {
+              if (!window.confirm(`Anda sudah mencatat "${title}" di tanggal ${existing.date}. Pindahkan ke tanggal ini dan hapus catatan lama?`)) {
+                isSavingRef.current = false;
+                setIsSaving(false);
+                return; // abort save entirely
               } else {
-                db.events.update(existing.id, { activities: filteredActs });
+                const filteredActs = existing.activities.filter(a => a.title !== title);
+                if (filteredActs.length === 0 && !existing.generalNote) {
+                  // Delete event if no other activities
+                  await db.events.delete(existing.id);
+                } else {
+                  await db.events.update(existing.id, { activities: filteredActs });
+                }
               }
             }
           }
+
+          if (milestoneKey) updatedPlantData[milestoneKey] = selectedDateStr;
+          if (newPhase) updatedPlantData.phase = newPhase;
         }
-
-        if (milestoneKey) updatedPlantData[milestoneKey] = selectedDateStr;
-        if (newPhase) updatedPlantData.phase = newPhase;
       }
+
+      await db.events.add({
+        userId: user.id,
+        plantId: plant.id,
+        date: selectedDateStr,
+        type: eventType,
+        generalNote: generalNote,
+        completed: false,
+        activities: activities
+      });
+
+      if (updatedPlantData && Object.keys(updatedPlantData).length > 0) {
+        await db.plants.update(plant.id, updatedPlantData);
+      }
+
+      setGeneralNote(''); setActivities([]); setIsAddingEvent(false); setEditingEventId(null);
+    } catch (error) {
+      console.error("Error saving event:", error);
+      alert("Gagal menyimpan riwayat/jadwal. Silakan coba lagi.");
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
-
-    await db.events.add({
-      userId: user.id,
-      plantId: plant.id,
-      date: selectedDateStr,
-      type: eventType,
-      generalNote: generalNote,
-      completed: false,
-      activities: activities
-    });
-
-    if (Object.keys(updatedPlantData).length > 0) {
-      await db.plants.update(plant.id, updatedPlantData);
-    }
-
-    setGeneralNote(''); setActivities([]); setIsAddingEvent(false); setEditingEventId(null);
   };
 
   const handleEditEvent = (event) => {
@@ -970,8 +1002,27 @@ export default function PlantDetail() {
               <div className="mt-4 pt-4 border-t border-white/10 shrink-0">
                 {isAddingEvent ? (
                   <div className="flex gap-2">
-                    <button onClick={handleSaveEvent} className="flex-1 bg-emerald-600 text-white rounded-lg py-2.5 text-sm font-semibold">Simpan {isPastOrToday ? 'Riwayat' : 'To-Do'}</button>
-                    <button onClick={() => {setIsAddingEvent(false); setActivities([]); setGeneralNote(''); setEditingEventId(null);}} className="px-5 bg-forest-bg border border-white/10 text-white rounded-lg py-2.5 text-sm">Batal</button>
+                    <button 
+                      onClick={handleSaveEvent} 
+                      disabled={isSaving}
+                      className="flex-1 bg-emerald-600 disabled:bg-emerald-800/80 text-white rounded-lg py-2.5 text-sm font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                    >
+                      {isSaving ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                          <span>Menyimpan...</span>
+                        </>
+                      ) : (
+                        `Simpan ${isPastOrToday ? 'Riwayat' : 'To-Do'}`
+                      )}
+                    </button>
+                    <button 
+                      onClick={() => {setIsAddingEvent(false); setActivities([]); setGeneralNote(''); setEditingEventId(null);}} 
+                      disabled={isSaving}
+                      className="px-5 bg-forest-bg border border-white/10 text-white rounded-lg py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Batal
+                    </button>
                   </div>
                 ) : (
                   <button onClick={() => setIsAddingEvent(true)} className={`w-full py-3 border border-dashed rounded-xl flex items-center justify-center gap-2 font-medium ${isPastOrToday ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>

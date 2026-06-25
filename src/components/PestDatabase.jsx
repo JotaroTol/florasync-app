@@ -16,6 +16,7 @@ export default function PestDatabase() {
   const [previewImage, setPreviewImage] = useState(null);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (previewImage) {
@@ -121,7 +122,8 @@ export default function PestDatabase() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (isSaving) return;
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
     setIsSaving(true);
     try {
       const payload = {
@@ -145,6 +147,7 @@ export default function PestDatabase() {
       console.error("Error saving pest:", error);
       alert("Gagal menyimpan data hama/penyakit. Silakan coba lagi.");
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -344,7 +347,7 @@ export default function PestDatabase() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex p-4 bg-black/60 backdrop-blur-sm overflow-y-auto py-10">
           <div className="bg-[#0a1a12] border border-emerald-500/30 p-6 rounded-2xl w-full max-w-2xl shadow-2xl relative m-auto">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+            <button onClick={() => !isSaving && setIsModalOpen(false)} disabled={isSaving} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <X size={24} />
             </button>
             <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">

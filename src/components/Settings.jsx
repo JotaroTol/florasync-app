@@ -122,6 +122,7 @@ export default function Settings() {
         supabase.from('events').delete().eq('userId', user.id),
         supabase.from('inventory').delete().eq('userId', user.id),
         supabase.from('pests').delete().eq('userId', user.id),
+        supabase.from('categories').delete().eq('userId', user.id),
         supabase.from('userProfile').delete().eq('userId', user.id)
       ]);
       window.location.reload();

@@ -28,7 +28,7 @@ function Layout({ children }) {
     <div className="flex h-screen w-full bg-forest-bg text-gray-100 font-sans overflow-hidden">
       <Sidebar activeTab={activePath} />
       
-      <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
         <Header />
         {children}
       </div>

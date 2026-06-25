@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Package, Plus, Search, Edit2, Trash2, ShieldCheck, ShieldAlert, X, AlertCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { db } from '../db';
+import { supabase } from '../supabaseClient';
 import ImageUploader from './ImageUploader';
 import { UserContext } from '../App';
 
@@ -22,6 +23,7 @@ export default function Inventory() {
   const [previewImage, setPreviewImage] = useState(null);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     if (previewImage) {
@@ -42,8 +44,93 @@ export default function Inventory() {
     golongan: 'Menengah'
   });
 
-  const categories = ['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya'];
+  const [categories, setCategories] = useState([]);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
   const units = ['gram', 'kg', 'ml', 'Liter', 'pcs'];
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase.from('categories').select('*').eq('userId', user.id);
+      if (error) {
+        setCategoriesError(true);
+        setCategories(['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya'].map((name, i) => ({ id: -i, name })));
+        return;
+      }
+      
+      if (data.length === 0) {
+        const defaults = ['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya'];
+        const toInsert = defaults.map(name => ({ name, userId: user.id }));
+        const { data: inserted, error: insertError } = await supabase.from('categories').insert(toInsert).select();
+        if (!insertError && inserted) {
+          setCategories(inserted.sort((a, b) => a.name.localeCompare(b.name)));
+        } else {
+          setCategories(defaults.map((name, index) => ({ id: -index, name })));
+        }
+      } else {
+        const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        setCategories(sorted);
+      }
+    } catch (err) {
+      console.error("Error loading categories:", err);
+      setCategories(['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya'].map((name, i) => ({ id: -i, name })));
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, [user.id]);
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    const nameTrimmed = newCategoryName.trim();
+    if (!nameTrimmed) return;
+    
+    if (categories.some(c => c.name.toLowerCase() === nameTrimmed.toLowerCase())) {
+      alert("Kategori dengan nama tersebut sudah ada.");
+      return;
+    }
+    
+    setIsSavingCategory(true);
+    try {
+      const { error } = await supabase.from('categories').insert({
+        name: nameTrimmed,
+        userId: user.id
+      });
+      if (error) throw error;
+      setNewCategoryName('');
+      await fetchCategories();
+    } catch (err) {
+      console.error("Error adding category:", err);
+      alert("Gagal menambahkan kategori. Silakan coba lagi.");
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (cat) => {
+    const isCategoryUsed = (categoryName) => inventoryData.some(item => item.category === categoryName);
+    if (isCategoryUsed(cat.name)) {
+      alert("Kategori ini tidak dapat dihapus karena masih digunakan oleh produk lain.");
+      return;
+    }
+    
+    if (!window.confirm(`Yakin ingin menghapus kategori "${cat.name}"?`)) {
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.from('categories').delete().eq('id', cat.id);
+      if (error) throw error;
+      await fetchCategories();
+    } catch (err) {
+      console.error("Error deleting category:", err);
+      alert("Gagal menghapus kategori. Silakan coba lagi.");
+    }
+  };
 
   // Filter
   const filteredInventory = inventoryData.filter(item => 
@@ -81,14 +168,15 @@ export default function Inventory() {
       setEditMode(null); // default for edit is not changing stock
     } else {
       setEditingItem(null);
-      setFormData({ name: '', category: 'Pupuk', stock: '', unit: 'gram', photoUrl: '', zatAktif: '', golongan: 'Menengah' });
+      setFormData({ name: '', category: categories[0]?.name || 'Pupuk', stock: '', unit: 'gram', photoUrl: '', zatAktif: '', golongan: 'Menengah' });
     }
     setIsModalOpen(true);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (isSaving) return;
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
     setIsSaving(true);
     try {
       const inputAmount = parseFloat(formData.stock) || 0;
@@ -128,6 +216,7 @@ export default function Inventory() {
       console.error("Error saving product:", error);
       alert("Gagal menyimpan produk. Silakan coba lagi.");
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -165,12 +254,20 @@ export default function Inventory() {
             />
           </div>
           {!isGuest && (
-            <button 
-              onClick={() => handleOpenModal()} 
-              className="bg-amber-600 hover:bg-amber-500 text-white border-none py-2 px-4 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all hover:-translate-y-0.5"
-            >
-              <Plus size={18} /> Tambah Produk
-            </button>
+            <div className="flex gap-2 shrink-0">
+              <button 
+                onClick={() => setIsCategoryModalOpen(true)} 
+                className="bg-forest-surface hover:bg-white/5 text-emerald-400 border border-emerald-500/20 py-2 px-4 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-md"
+              >
+                Kelola Kategori
+              </button>
+              <button 
+                onClick={() => handleOpenModal()} 
+                className="bg-amber-600 hover:bg-amber-500 text-white border-none py-2 px-4 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all hover:-translate-y-0.5"
+              >
+                <Plus size={18} /> Tambah Produk
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -247,7 +344,7 @@ export default function Inventory() {
               <h3 className="text-xl font-semibold text-amber-400 flex items-center gap-2">
                 <Package size={20} /> {editingItem ? 'Edit Produk / Restock' : 'Tambah Produk Baru'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+              <button onClick={() => !isSaving && setIsModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"><X size={20}/></button>
             </div>
             <form onSubmit={handleSave} className="flex flex-col gap-5">
               <div>
@@ -279,7 +376,7 @@ export default function Inventory() {
                     onChange={e => setFormData({...formData, category: e.target.value})} 
                     className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
                   >
-                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    {categories.map(cat => <option key={cat.id || cat.name} value={cat.name}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -419,6 +516,100 @@ export default function Inventory() {
           </button>
         </div>
       </div>
+
+      {/* Category Management Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm px-4 py-10 overflow-y-auto">
+          <div className="bg-[#0a1a12] border border-emerald-500/30 rounded-2xl w-full max-w-md p-6 shadow-2xl relative m-auto">
+            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+              <h3 className="text-xl font-semibold text-emerald-400 flex items-center gap-2">
+                Kelola Kategori Produk
+              </h3>
+              <button onClick={() => setIsCategoryModalOpen(false)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+            </div>
+
+            {categoriesError ? (
+              <div className="flex flex-col gap-4">
+                <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-4 rounded-xl text-sm flex flex-col gap-2">
+                  <span className="font-semibold flex items-center gap-1.5"><AlertCircle size={16} /> Fitur Terbatas</span>
+                  <span>Tabel database `categories` belum dibuat di Supabase Anda. Anda tetap dapat menggunakan kategori bawaan, tetapi untuk menambah/menghapus kategori kustom secara permanen, silakan jalankan SQL berikut di dasbor Supabase Anda:</span>
+                </div>
+                <div className="bg-black/40 border border-white/10 p-3 rounded-lg font-mono text-[10px] text-gray-300 select-all overflow-x-auto whitespace-pre">
+{`CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  name TEXT NOT NULL,
+  "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);
+
+ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Buka <strong>Supabase Dashboard → SQL Editor</strong>, tempel (paste) kode di atas, lalu klik <strong>Run</strong>. Setelah itu, muat ulang (refresh) halaman ini.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-5">
+                {/* Add Category Form */}
+                <form onSubmit={handleAddCategory} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Nama kategori baru..."
+                    value={newCategoryName}
+                    onChange={e => setNewCategoryName(e.target.value)}
+                    disabled={isSavingCategory}
+                    className="flex-1 bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSavingCategory}
+                    className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
+                  >
+                    {isSavingCategory ? '...' : 'Tambah'}
+                  </button>
+                </form>
+
+                {/* Categories List */}
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                  {categories.map(cat => {
+                    const used = inventoryData.some(item => item.category === cat.name);
+                    return (
+                      <div key={cat.id || cat.name} className="flex justify-between items-center bg-forest-surface/50 border border-white/5 p-3 rounded-lg hover:bg-forest-surface transition-all">
+                        <span className="text-sm text-gray-200 font-medium">{cat.name}</span>
+                        {used ? (
+                          <span className="text-[10px] text-gray-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded" title="Kategori ini sedang digunakan oleh produk gudang">
+                            Digunakan
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat)}
+                            className="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                            title="Hapus Kategori"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="px-4 py-2 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors text-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

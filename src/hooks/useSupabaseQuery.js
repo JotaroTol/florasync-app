@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import { subscribeToTable } from '../db';
 
 /**
  * Hook to fetch and subscribe to Supabase data.
@@ -50,6 +51,11 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
 
     fetchData();
 
+    // Subscribe to local write events via our db proxy for instant zero-latency updates
+    const unsubscribeLocal = subscribeToTable(table, () => {
+      fetchData();
+    });
+
     // Clean up any existing channel before creating a new one
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
@@ -75,6 +81,7 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
 
     return () => {
       isMounted = false;
+      unsubscribeLocal();
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;

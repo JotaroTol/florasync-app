@@ -11,6 +11,8 @@ export default function Locations() {
   const locationsData = useSupabaseQuery('locations', { eq: { userId: user.id } }, [user.id]) || [];
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = React.useRef(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -39,18 +41,29 @@ export default function Locations() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const dataToSave = {
-      ...formData,
-      userId: user.id,
-      area: parseFloat(formData.area) || 0
-    };
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      const dataToSave = {
+        ...formData,
+        userId: user.id,
+        area: parseFloat(formData.area) || 0
+      };
 
-    if (editingItem) {
-      await db.locations.update(editingItem.id, dataToSave);
-    } else {
-      await db.locations.add(dataToSave);
+      if (editingItem) {
+        await db.locations.update(editingItem.id, dataToSave);
+      } else {
+        await db.locations.add(dataToSave);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving location:", error);
+      alert("Gagal menyimpan lahan. Silakan coba lagi.");
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -150,7 +163,7 @@ export default function Locations() {
               <h3 className="text-xl font-semibold text-blue-400 flex items-center gap-2">
                 <MapPin size={20} /> {editingItem ? 'Edit Lahan' : 'Tambah Lahan Baru'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+              <button onClick={() => !isSaving && setIsModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"><X size={20}/></button>
             </div>
             
             <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -219,8 +232,28 @@ export default function Locations() {
               </div>
 
               <div className="md:col-span-2 flex gap-3 pt-4 border-t border-white/10 mt-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors">Simpan Lahan</button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800/80 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    "Simpan Lahan"
+                  )}
+                </button>
               </div>
             </form>
           </div>

@@ -18,6 +18,8 @@ export default function MyPlants() {
   const locationsData = useSupabaseQuery('locations', { eq: { userId: user.id } }, [user.id]) || [];
   
   const [editingPlant, setEditingPlant] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = React.useRef(false);
   const [viewTab, setViewTab] = useState('aktif'); // 'aktif' | 'arsip'
 
   // Filter Logic
@@ -55,28 +57,39 @@ export default function MyPlants() {
 
   const handleEditSave = async (e) => {
     e.preventDefault();
-    const dataToSave = {
-      name: editingPlant.name,
-      varietas: editingPlant.varietas,
-      sownDate: editingPlant.sownDate,
-      plantedDate: editingPlant.plantedDate,
-      locationId: parseInt(editingPlant.locationId) || null,
-      plantCount: parseInt(editingPlant.plantCount) || 0,
-      photoUrl: editingPlant.photoUrl || ''
-    };
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      const dataToSave = {
+        name: editingPlant.name,
+        varietas: editingPlant.varietas,
+        sownDate: editingPlant.sownDate,
+        plantedDate: editingPlant.plantedDate,
+        locationId: parseInt(editingPlant.locationId) || null,
+        plantCount: parseInt(editingPlant.plantCount) || 0,
+        photoUrl: editingPlant.photoUrl || ''
+      };
 
-    if (editingPlant.id) {
-      await db.plants.update(editingPlant.id, dataToSave);
-    } else {
-      await db.plants.add({
-        ...dataToSave,
-        userId: user.id,
-        phase: "Semai",
-        status: "healthy",
-        statusText: "Baru Ditanam"
-      });
+      if (editingPlant.id) {
+        await db.plants.update(editingPlant.id, dataToSave);
+      } else {
+        await db.plants.add({
+          ...dataToSave,
+          userId: user.id,
+          phase: "Semai",
+          status: "healthy",
+          statusText: "Baru Ditanam"
+        });
+      }
+      setEditingPlant(null);
+    } catch (error) {
+      console.error("Error saving plant:", error);
+      alert("Gagal menyimpan data tanaman. Silakan coba lagi.");
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
-    setEditingPlant(null);
   };
 
   const openAddPlantModal = () => {
@@ -191,7 +204,7 @@ export default function MyPlants() {
           <div className="bg-forest-bg border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-emerald-400">{editingPlant.id ? 'Edit Tanaman' : 'Tambah Tanaman Baru'}</h3>
-              <button onClick={() => setEditingPlant(null)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+              <button onClick={() => !isSaving && setEditingPlant(null)} disabled={isSaving} className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"><X size={20}/></button>
             </div>
             <form onSubmit={handleEditSave} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
@@ -243,8 +256,28 @@ export default function MyPlants() {
                 />
               </div>
               <div className="flex gap-2 mt-4">
-                <button type="button" onClick={() => setEditingPlant(null)} className="flex-1 px-4 py-2 bg-forest-surface text-gray-300 rounded-lg hover:bg-white/5 transition-colors">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors">Simpan</button>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingPlant(null)} 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2 bg-forest-surface text-gray-300 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800/80 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </button>
               </div>
             </form>
           </div>

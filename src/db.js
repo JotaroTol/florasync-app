@@ -1,26 +1,55 @@
 import { supabase } from './supabaseClient';
 
+const listeners = {};
+
+export const subscribeToTable = (tableName, callback) => {
+  if (!listeners[tableName]) {
+    listeners[tableName] = new Set();
+  }
+  listeners[tableName].add(callback);
+  return () => {
+    listeners[tableName].delete(callback);
+  };
+};
+
+const notifyTableChange = (tableName) => {
+  if (listeners[tableName]) {
+    listeners[tableName].forEach(callback => {
+      try {
+        callback();
+      } catch (err) {
+        console.error('Error in table change callback:', err);
+      }
+    });
+  }
+};
+
 const createTableProxy = (tableName) => ({
   add: async (data) => {
     const { data: inserted, error } = await supabase.from(tableName).insert(data).select().single();
     if (error) throw error;
+    notifyTableChange(tableName);
     return inserted.id;
   },
   bulkAdd: async (dataArray) => {
     const { error } = await supabase.from(tableName).insert(dataArray);
     if (error) throw error;
+    notifyTableChange(tableName);
   },
   update: async (id, data) => {
     const { error } = await supabase.from(tableName).update(data).eq('id', id);
     if (error) throw error;
+    notifyTableChange(tableName);
   },
   delete: async (id) => {
     const { error } = await supabase.from(tableName).delete().eq('id', id);
     if (error) throw error;
+    notifyTableChange(tableName);
   },
   put: async (data) => {
     const { error } = await supabase.from(tableName).upsert(data);
     if (error) throw error;
+    notifyTableChange(tableName);
   },
   // Provide basic fetch for non-hook direct calls (e.g. login)
   where: (field) => ({
@@ -62,7 +91,8 @@ export const db = {
   templates: createTableProxy('templates'),
   pests: createTableProxy('pests'),
   userProfile: createTableProxy('userProfile'),
-  users: createTableProxy('users')
+  users: createTableProxy('users'),
+  categories: createTableProxy('categories')
 };
 
 // Removed bulk seeder since Supabase is persistent and shared.

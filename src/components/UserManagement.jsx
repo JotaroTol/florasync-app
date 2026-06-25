@@ -7,6 +7,8 @@ export default function UserManagement() {
   const users = useSupabaseQuery('users', {}) || [];
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = React.useRef(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
     username: '',
@@ -68,41 +70,56 @@ export default function UserManagement() {
   const handleSave = async (e) => {
     e.preventDefault();
     setError('');
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
 
-    if (editingUser) {
-      if (formData.username !== editingUser.username) {
+    try {
+      if (editingUser) {
+        if (formData.username !== editingUser.username) {
+          const existing = await db.users.where('username').equals(formData.username).first();
+          if (existing) {
+            setError('Username sudah terpakai oleh pengguna lain.');
+            isSavingRef.current = false;
+            setIsSaving(false);
+            return;
+          }
+        }
+        // Update existing
+        await db.users.update(editingUser.id, {
+          username: formData.username,
+          password: formData.password,
+          role: formData.role,
+          name: formData.name,
+          permissions: formData.role === 'owner' || formData.role === 'admin' || formData.role === 'user' ? availableFeatures.map(f => f.id) : formData.permissions,
+          guestViewId: formData.role === 'guest' ? parseInt(formData.guestViewId) : null
+        });
+      } else {
         const existing = await db.users.where('username').equals(formData.username).first();
         if (existing) {
-          setError('Username sudah terpakai oleh pengguna lain.');
+          setError('Username sudah terpakai.');
+          isSavingRef.current = false;
+          setIsSaving(false);
           return;
         }
+        // Add new
+        await db.users.add({
+          username: formData.username,
+          password: formData.password,
+          role: formData.role,
+          name: formData.name,
+          permissions: formData.role === 'owner' || formData.role === 'admin' || formData.role === 'user' ? availableFeatures.map(f => f.id) : formData.permissions,
+          guestViewId: formData.role === 'guest' ? parseInt(formData.guestViewId) : null
+        });
       }
-      // Update existing
-      await db.users.update(editingUser.id, {
-        username: formData.username,
-        password: formData.password,
-        role: formData.role,
-        name: formData.name,
-        permissions: formData.role === 'owner' || formData.role === 'admin' || formData.role === 'user' ? availableFeatures.map(f => f.id) : formData.permissions,
-        guestViewId: formData.role === 'guest' ? parseInt(formData.guestViewId) : null
-      });
-    } else {
-      const existing = await db.users.where('username').equals(formData.username).first();
-      if (existing) {
-        setError('Username sudah terpakai.');
-        return;
-      }
-      // Add new
-      await db.users.add({
-        username: formData.username,
-        password: formData.password,
-        role: formData.role,
-        name: formData.name,
-        permissions: formData.role === 'owner' || formData.role === 'admin' || formData.role === 'user' ? availableFeatures.map(f => f.id) : formData.permissions,
-        guestViewId: formData.role === 'guest' ? parseInt(formData.guestViewId) : null
-      });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving user:", error);
+      setError("Gagal menyimpan pengguna. Silakan coba lagi.");
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -205,7 +222,7 @@ export default function UserManagement() {
               <h3 className="text-xl font-semibold text-emerald-400">
                 {editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white"><X size={20}/></button>
+              <button onClick={() => !isSaving && setIsModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"><X size={20}/></button>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1">
@@ -295,9 +312,28 @@ export default function UserManagement() {
             </div>
             
             <div className="p-6 border-t border-white/10 shrink-0 flex gap-3 justify-end">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 bg-forest-surface text-gray-300 rounded-lg hover:bg-white/5 transition-colors font-medium">Batal</button>
-              <button type="submit" form="userForm" className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
-                Simpan
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)} 
+                disabled={isSaving}
+                className="px-5 py-2 bg-forest-surface text-gray-300 rounded-lg hover:bg-white/5 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit" 
+                form="userForm" 
+                disabled={isSaving}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-850 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  "Simpan"
+                )}
               </button>
             </div>
           </div>
