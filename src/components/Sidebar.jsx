@@ -73,7 +73,7 @@ export default function Sidebar({ activeTab }) {
               to={item.path}
               title={isCollapsed ? item.label : undefined}
               style={{
-                transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)'
+                transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1)'
               }}
               className={`flex items-center rounded-xl font-medium py-3 relative overflow-hidden ${
                 isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
@@ -106,7 +106,7 @@ export default function Sidebar({ activeTab }) {
           to="/settings" 
           title={isCollapsed ? "Pengaturan" : undefined}
           style={{
-            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)'
+            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1)'
           }}
           className={`flex items-center rounded-xl font-medium py-3 relative overflow-hidden ${
             isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
