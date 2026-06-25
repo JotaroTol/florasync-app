@@ -801,15 +801,7 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                 </div>
               )}
 
-            <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsCategoryModalOpen(false)}
-                className="px-4 py-2 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors text-sm"
-              >
-                Tutup
-              </button>
-            </div>
+
           </div>
         </div>
       )}
