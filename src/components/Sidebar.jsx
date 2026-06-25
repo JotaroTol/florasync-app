@@ -30,7 +30,7 @@ export default function Sidebar({ activeTab }) {
           <Leaf size={28} />
           <span className="pb-1">FloraSync</span>
         </div>
-        <span className="text-[11px] text-gray-500 ml-10 font-medium">v1.1.2</span>
+        <span className="text-[11px] text-gray-500 ml-10 font-medium">v1.1.3</span>
       </div>
       
       <nav className="flex-1 flex flex-col gap-2 px-4 overflow-y-auto">

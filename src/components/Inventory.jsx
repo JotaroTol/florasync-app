@@ -103,8 +103,8 @@ export default function Inventory() {
       unit: formData.unit,
       photoUrl: formData.photoUrl,
       stock: finalStock,
-      zatAktif: ['Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Pestisida'].includes(formData.category) ? formData.zatAktif : '',
-      golongan: ['Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Pestisida'].includes(formData.category) ? formData.golongan : 'Menengah'
+      zatAktif: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.zatAktif : '',
+      golongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.golongan : 'Menengah'
     };
 
     if (editingItem) {
@@ -198,7 +198,7 @@ export default function Inventory() {
                     </td>
                     <td className="p-4 text-sm text-gray-400">
                       {item.category}
-                      {item.golongan && ['Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Pestisida'].includes(item.category) && (
+                      {item.golongan && ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(item.category) && (
                         <span className="ml-2 px-2 py-0.5 rounded-full bg-white/5 text-xs text-emerald-400/80 border border-emerald-500/20">
                           {item.golongan}
                         </span>
@@ -278,7 +278,7 @@ export default function Inventory() {
                 </div>
               </div>
 
-              {['Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Pestisida'].includes(formData.category) && (
+              {['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Zat Aktif</label>

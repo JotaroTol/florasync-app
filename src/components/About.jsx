@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Leaf, Info, Globe, Heart } from 'lucide-react';
 
 export default function About() {
+  const [showAllChangelog, setShowAllChangelog] = useState(false);
+
   return (
     <div className="flex-1 overflow-y-auto p-8 lg:p-10">
       <header className="mb-10">
@@ -21,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.2) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.3) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,7 +51,17 @@ export default function About() {
             <div className="space-y-4">
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.2 (Instant Updates)</span>
+                  <span className="font-bold text-emerald-400">v1.1.3 (ZPT Form & Collapsible Log)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Penyesuaian kategori <strong>ZPT (Zat Pengatur Tumbuh)</strong> agar tidak menampilkan input zat aktif dan tingkat golongan, sama seperti kategori Pupuk.</li>
+                  <li>Implementasi fitur daftar riwayat pembaruan yang dapat dilipat (*collapsible changelog*) dengan tombol "Tampilkan Versi Terdahulu" untuk menjaga kerapian halaman.</li>
+                </ul>
+              </div>
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.2 (Instant Updates)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
@@ -83,36 +95,49 @@ export default function About() {
                   <li>Pengembangan dan publikasi web diselesaikan oleh <strong>JotaroTol</strong>.</li>
                 </ul>
               </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.0.2-beta</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Penggantian fitur Template Jadwal dengan tab <strong>Riwayat</strong> pada halaman Jadwal Global.</li>
-                  <li>Perbaikan sinkronisasi versi dan tata letak UI aplikasi.</li>
-                </ul>
-              </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.0.1-beta</span>
-                  <span className="text-xs text-gray-500">25 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
-                  <li>Penambahan fitur manajemen pengguna dan <em>Role-Based Access Control</em> (RBAC).</li>
-                  <li>Perbaikan <em>layout</em> <em>Sidebar</em>.</li>
-                  <li>Penambahan halaman Tentang Web (<em>About</em>).</li>
-                </ul>
-              </div>
-              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400/50">v1.0.0-beta</span>
-                  <span className="text-xs text-gray-500">23 Juni 2026</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-500">
-                  <li>Rilis perdana FloraSync dengan fitur dasar manajemen lahan, tanaman, jadwal, gudang, dan hama.</li>
-                </ul>
-              </div>
+
+              {showAllChangelog && (
+                <>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.0.2-beta</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Penggantian fitur Template Jadwal dengan tab <strong>Riwayat</strong> pada halaman Jadwal Global.</li>
+                      <li>Perbaikan sinkronisasi versi dan tata letak UI aplikasi.</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.0.1-beta</span>
+                      <span className="text-xs text-gray-500">25 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                      <li>Penambahan fitur manajemen pengguna dan <em>Role-Based Access Control</em> (RBAC).</li>
+                      <li>Perbaikan <em>layout</em> <em>Sidebar</em>.</li>
+                      <li>Penambahan halaman Tentang Web (<em>About</em>).</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-emerald-400/50">v1.0.0-beta</span>
+                      <span className="text-xs text-gray-500">23 Juni 2026</span>
+                    </div>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-500">
+                      <li>Rilis perdana FloraSync dengan fitur dasar manajemen lahan, tanaman, jadwal, gudang, dan hama.</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+
+              <button 
+                type="button"
+                onClick={() => setShowAllChangelog(!showAllChangelog)}
+                className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition-all mt-2 inline-flex items-center gap-1.5 outline-none border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-emerald-500/10 active:scale-95 w-fit"
+              >
+                {showAllChangelog ? 'Tampilkan Lebih Sedikit' : 'Tampilkan Versi Terdahulu (Beta)'}
+              </button>
             </div>
           </div>
         </div>
