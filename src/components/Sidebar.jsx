@@ -73,7 +73,7 @@ export default function Sidebar({ activeTab }) {
               to={item.path}
               title={isCollapsed ? item.label : undefined}
               style={{
-                transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.15s ease, color 0.15s ease, transform 0.15s ease'
+                transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)'
               }}
               className={`flex items-center rounded-xl font-medium py-3 relative overflow-hidden ${
                 isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
@@ -83,9 +83,9 @@ export default function Sidebar({ activeTab }) {
                   : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
               }`}
             >
-              {/* Premium Vertical Spring-Stretching Active Indicator */}
+              {/* Premium Vertical Spring-Stretching Active Indicator - Smooth Liquid */}
               <span 
-                className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-emerald-500 transition-all duration-250 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-center ${
+                className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-emerald-500 transition-all duration-350 ease-[cubic-bezier(0.4,0,0.2,1)] origin-center ${
                   isActive ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'
                 }`}
               />
@@ -106,7 +106,7 @@ export default function Sidebar({ activeTab }) {
           to="/settings" 
           title={isCollapsed ? "Pengaturan" : undefined}
           style={{
-            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.15s ease, color 0.15s ease, transform 0.15s ease'
+            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)'
           }}
           className={`flex items-center rounded-xl font-medium py-3 relative overflow-hidden ${
             isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
@@ -116,9 +116,9 @@ export default function Sidebar({ activeTab }) {
               : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
           }`}
         >
-          {/* Premium Vertical Active Indicator */}
+          {/* Premium Vertical Active Indicator - Smooth Liquid */}
           <span 
-            className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-emerald-500 transition-all duration-250 ease-[cubic-bezier(0.34,1.56,0.64,1)] origin-center ${
+            className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-emerald-500 transition-all duration-350 ease-[cubic-bezier(0.4,0,0.2,1)] origin-center ${
               activeTab === 'settings' ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'
             }`}
           />
@@ -134,7 +134,7 @@ export default function Sidebar({ activeTab }) {
           onClick={() => { logout(); navigate('/'); }}
           title={isCollapsed ? "Logout" : undefined}
           style={{
-            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.15s ease, color 0.15s ease'
+            transition: 'padding 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.5s cubic-bezier(0.4,0,0.2,1), background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s cubic-bezier(0.4,0,0.2,1)'
           }}
           className={`flex items-center rounded-xl font-medium py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 ${
             isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4'
