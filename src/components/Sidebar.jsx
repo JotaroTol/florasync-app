@@ -73,7 +73,7 @@ export default function Sidebar({ activeTab }) {
               to={item.path}
               title={isCollapsed ? item.label : undefined}
               className={`flex items-center rounded-xl transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] font-medium py-3 ${
-                isCollapsed ? 'pl-[30px] pr-2 gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
+                isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
               } ${
                 isActive 
                   ? 'bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500 shadow-[inset_4px_0_0_0_rgba(16,185,129,1)]' 
@@ -97,7 +97,7 @@ export default function Sidebar({ activeTab }) {
           to="/settings" 
           title={isCollapsed ? "Pengaturan" : undefined}
           className={`flex items-center rounded-xl transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] font-medium py-3 ${
-            isCollapsed ? 'pl-[30px] pr-2 gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
+            isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4 hover:translate-x-1.5'
           } ${
             activeTab === 'settings' 
               ? 'bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500 shadow-[inset_4px_0_0_0_rgba(16,185,129,1)]' 
@@ -116,7 +116,7 @@ export default function Sidebar({ activeTab }) {
           onClick={() => { logout(); navigate('/'); }}
           title={isCollapsed ? "Logout" : undefined}
           className={`flex items-center rounded-xl transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] font-medium py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 ${
-            isCollapsed ? 'pl-[30px] pr-2 gap-0' : 'pl-4 pr-4 gap-4'
+            isCollapsed ? 'pl-[18px] pr-[18px] gap-0' : 'pl-4 pr-4 gap-4'
           }`}
         >
           <LogOut size={20} className="shrink-0" />
