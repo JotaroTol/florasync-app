@@ -50,6 +50,65 @@ export default function Inventory() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSavingCategory, setIsSavingCategory] = useState(false);
 
+  // States for Category Editing
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryNeedsGolongan, setEditCategoryNeedsGolongan] = useState(false);
+  const [editCategoryGolonganOptions, setEditCategoryGolonganOptions] = useState('');
+
+  const getCategoryGolonganConfig = (cat) => {
+    const needsGolonganDefault = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(cat.name);
+    const needsGolongan = cat.needsGolongan !== undefined && cat.needsGolongan !== null ? cat.needsGolongan : needsGolonganDefault;
+    
+    const optionsDefault = needsGolongan ? 'Ringan, Menengah, Berat' : '';
+    const optionsStr = cat.golonganOptions !== undefined && cat.golonganOptions !== null ? cat.golonganOptions : optionsDefault;
+    
+    const options = optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(s => s) : [];
+    
+    return { needsGolongan, options, optionsStr };
+  };
+
+  const handleStartEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setEditCategoryName(cat.name);
+    
+    const config = getCategoryGolonganConfig(cat);
+    setEditCategoryNeedsGolongan(config.needsGolongan);
+    setEditCategoryGolonganOptions(config.optionsStr);
+  };
+
+  const handleSaveCategoryEdit = async (e) => {
+    e.preventDefault();
+    if (!editingCategory) return;
+    const nameTrimmed = editCategoryName.trim();
+    if (!nameTrimmed) return;
+    
+    if (categories.some(c => c.id !== editingCategory.id && c.name.toLowerCase() === nameTrimmed.toLowerCase())) {
+      alert("Kategori dengan nama tersebut sudah ada.");
+      return;
+    }
+    
+    setIsSavingCategory(true);
+    try {
+      const updates = {
+        name: nameTrimmed,
+        needsGolongan: editCategoryNeedsGolongan,
+        golonganOptions: editCategoryNeedsGolongan ? editCategoryGolonganOptions.trim() : ''
+      };
+      
+      const { error } = await supabase.from('categories').update(updates).eq('id', editingCategory.id);
+      if (error) throw error;
+      
+      setEditingCategory(null);
+      await fetchCategories();
+    } catch (err) {
+      console.error("Error updating category:", err);
+      alert("Gagal memperbarui kategori. Silakan coba lagi.");
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
   const units = ['gram', 'kg', 'ml', 'Liter', 'pcs'];
 
   const fetchCategories = async () => {
@@ -138,6 +197,27 @@ export default function Inventory() {
     item.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Sync golongan selection with selected category's available options
+  useEffect(() => {
+    if (formData.category) {
+      const catObj = categories.find(c => c.name === formData.category);
+      const config = catObj 
+        ? getCategoryGolonganConfig(catObj) 
+        : { 
+            needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category), 
+            options: ['Ringan', 'Menengah', 'Berat'] 
+          };
+      
+      if (config.needsGolongan && config.options.length > 0) {
+        if (!config.options.includes(formData.golongan)) {
+          setFormData(prev => ({ ...prev, golongan: config.options[0] }));
+        }
+      } else if (!config.needsGolongan) {
+        setFormData(prev => ({ ...prev, golongan: '' }));
+      }
+    }
+  }, [formData.category, categories]);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const editId = params.get('edit');
@@ -195,6 +275,14 @@ export default function Inventory() {
         }
       }
 
+      const currentCat = categories.find(c => c.name === formData.category);
+      const config = currentCat 
+        ? getCategoryGolonganConfig(currentCat) 
+        : { 
+            needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category),
+            options: ['Ringan', 'Menengah', 'Berat']
+          };
+
       const dataToSave = {
         userId: user.id,
         name: formData.name,
@@ -202,8 +290,8 @@ export default function Inventory() {
         unit: formData.unit,
         photoUrl: formData.photoUrl,
         stock: finalStock,
-        zatAktif: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.zatAktif : '',
-        golongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.golongan : 'Menengah'
+        zatAktif: config.needsGolongan ? formData.zatAktif : '',
+        golongan: config.needsGolongan ? (formData.golongan || config.options[0] || '') : ''
       };
 
       if (editingItem) {
@@ -312,11 +400,16 @@ export default function Inventory() {
                     </td>
                     <td className="p-4 text-sm text-gray-400">
                       {item.category}
-                      {item.golongan && ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(item.category) && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full bg-white/5 text-xs text-emerald-400/80 border border-emerald-500/20">
-                          {item.golongan}
-                        </span>
-                      )}
+                      {item.golongan && (() => {
+                        const catObj = categories.find(c => c.name === item.category);
+                        const config = catObj ? getCategoryGolonganConfig(catObj) : { needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(item.category) };
+                        if (!config.needsGolongan) return null;
+                        return (
+                          <span className="ml-2 px-2 py-0.5 rounded-full bg-white/5 text-xs text-emerald-400/80 border border-emerald-500/20">
+                            {item.golongan}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="p-4 font-mono text-amber-400 font-semibold">{item.stock} <span className="text-xs text-gray-500">{item.unit || 'gram'}</span></td>
                     <td className="p-4">{getStatusBadge(item.stock)}</td>
@@ -392,32 +485,44 @@ export default function Inventory() {
                 </div>
               </div>
 
-              {['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Zat Aktif</label>
-                    <input 
-                      type="text" 
-                      value={formData.zatAktif} 
-                      onChange={e => setFormData({...formData, zatAktif: e.target.value})} 
-                      placeholder="Contoh: Abamektin"
-                      className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none transition-all" 
-                    />
+              {(() => {
+                const selectedCatObj = categories.find(c => c.name === formData.category);
+                const config = selectedCatObj 
+                  ? getCategoryGolonganConfig(selectedCatObj) 
+                  : { 
+                      needsGolongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category),
+                      options: ['Ringan', 'Menengah', 'Berat']
+                    };
+                
+                if (!config.needsGolongan) return null;
+                
+                return (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Zat Aktif</label>
+                      <input 
+                        type="text" 
+                        value={formData.zatAktif} 
+                        onChange={e => setFormData({...formData, zatAktif: e.target.value})} 
+                        placeholder="Contoh: Abamektin"
+                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none transition-all" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Tingkat / Golongan</label>
+                      <select 
+                        value={formData.golongan} 
+                        onChange={e => setFormData({...formData, golongan: e.target.value})} 
+                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
+                      >
+                        {config.options.map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Tingkat / Golongan</label>
-                    <select 
-                      value={formData.golongan} 
-                      onChange={e => setFormData({...formData, golongan: e.target.value})} 
-                      className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
-                    >
-                      <option value="Ringan">Ringan</option>
-                      <option value="Menengah">Menengah</option>
-                      <option value="Berat">Berat</option>
-                    </select>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {editingItem && (
                 <div className="bg-amber-900/10 border border-amber-500/20 p-3 rounded-lg flex items-center justify-between mt-2">
@@ -539,7 +644,9 @@ export default function Inventory() {
   id SERIAL PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   name TEXT NOT NULL,
-  "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+  "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  "needsGolongan" BOOLEAN DEFAULT FALSE,
+  "golonganOptions" TEXT DEFAULT ''
 );
 
 ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
@@ -548,55 +655,151 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                   Buka <strong>Supabase Dashboard → SQL Editor</strong>, tempel (paste) kode di atas, lalu klik <strong>Run</strong>. Setelah itu, muat ulang (refresh) halaman ini.
                 </p>
               </div>
-            ) : (
-              <div className="flex flex-col gap-5">
-                {/* Add Category Form */}
-                <form onSubmit={handleAddCategory} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Nama kategori baru..."
-                    value={newCategoryName}
-                    onChange={e => setNewCategoryName(e.target.value)}
-                    disabled={isSavingCategory}
-                    className="flex-1 bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSavingCategory}
-                    className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
-                  >
-                    {isSavingCategory ? '...' : 'Tambah'}
-                  </button>
-                </form>
+            ) : editingCategory ? (
+                /* Edit Category Form */
+                <form onSubmit={handleSaveCategoryEdit} className="flex flex-col gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Nama Kategori</label>
+                    <input
+                      type="text"
+                      value={editCategoryName}
+                      onChange={e => setEditCategoryName(e.target.value)}
+                      disabled={isSavingCategory}
+                      className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2 py-1">
+                    <input
+                      type="checkbox"
+                      id="needsGolonganCheckbox"
+                      checked={editCategoryNeedsGolongan}
+                      onChange={e => setEditCategoryNeedsGolongan(e.target.checked)}
+                      disabled={isSavingCategory}
+                      className="rounded bg-forest-surface border-white/10 text-emerald-600 focus:ring-0 w-4 h-4 accent-emerald-500"
+                    />
+                    <label htmlFor="needsGolonganCheckbox" className="text-sm font-medium text-gray-200 cursor-pointer select-none">
+                      Butuh Golongan & Zat Aktif
+                    </label>
+                  </div>
 
-                {/* Categories List */}
-                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                  {categories.map(cat => {
-                    const used = inventoryData.some(item => item.category === cat.name);
-                    return (
-                      <div key={cat.id || cat.name} className="flex justify-between items-center bg-forest-surface/50 border border-white/5 p-3 rounded-lg hover:bg-forest-surface transition-all">
-                        <span className="text-sm text-gray-200 font-medium">{cat.name}</span>
-                        {used ? (
-                          <span className="text-[10px] text-gray-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded" title="Kategori ini sedang digunakan oleh produk gudang">
-                            Digunakan
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCategory(cat)}
-                            className="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
-                            title="Hapus Kategori"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {editCategoryNeedsGolongan && (
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">
+                        Pilihan Golongan (Pisahkan dengan koma)
+                      </label>
+                      <input
+                        type="text"
+                        value={editCategoryGolonganOptions}
+                        onChange={e => setEditCategoryGolonganOptions(e.target.value)}
+                        placeholder="Contoh: Ringan, Menengah, Berat"
+                        disabled={isSavingCategory}
+                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        required={editCategoryNeedsGolongan}
+                      />
+                      <p className="text-[10px] text-gray-500 mt-1">
+                        Masukkan opsi golongan yang dipisahkan dengan tanda koma.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 mt-4 pt-4 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setEditingCategory(null)}
+                      disabled={isSavingCategory}
+                      className="flex-1 px-4 py-2 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors text-sm"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingCategory}
+                      className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center"
+                    >
+                      {isSavingCategory ? 'Menyimpan...' : 'Simpan'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="flex flex-col gap-5">
+                  {/* Add Category Form */}
+                  <form onSubmit={handleAddCategory} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Nama kategori baru..."
+                      value={newCategoryName}
+                      onChange={e => setNewCategoryName(e.target.value)}
+                      disabled={isSavingCategory}
+                      className="flex-1 bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSavingCategory}
+                      className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
+                    >
+                      {isSavingCategory ? '...' : 'Tambah'}
+                    </button>
+                  </form>
+
+                  {/* Categories List */}
+                  <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                    {categories.map(cat => {
+                      const used = inventoryData.some(item => item.category === cat.name);
+                      return (
+                        <div key={cat.id || cat.name} className="flex justify-between items-center bg-forest-surface/50 border border-white/5 p-3 rounded-lg hover:bg-forest-surface transition-all">
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-200 font-medium">{cat.name}</span>
+                            {(() => {
+                              const config = getCategoryGolonganConfig(cat);
+                              if (config.needsGolongan) {
+                                return (
+                                  <span className="text-[10px] text-emerald-400/80 mt-0.5">
+                                    Golongan: {config.options.join(', ') || '(Belum diatur)'}
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span className="text-[10px] text-gray-500 mt-0.5">
+                                  Tanpa Golongan
+                                </span>
+                              );
+                            })()}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditCategory(cat)}
+                              className="text-gray-500 hover:text-amber-400 p-1 rounded hover:bg-amber-500/10 transition-colors"
+                              title="Edit Kategori"
+                              disabled={cat.id < 0}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            {used ? (
+                              <span className="text-[10px] text-gray-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded select-none" title="Kategori ini sedang digunakan oleh produk gudang">
+                                Digunakan
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCategory(cat)}
+                                className="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                title="Hapus Kategori"
+                                disabled={cat.id < 0}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
               <button

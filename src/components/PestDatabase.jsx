@@ -11,7 +11,26 @@ export default function PestDatabase() {
   const isGuest = user?.role === 'guest';
   const pests = useSupabaseQuery('pests', { eq: { userId: user.id } }, [user.id]) || [];
   const inventoryItems = useSupabaseQuery('inventory', { eq: { userId: user.id } }, [user.id]) || [];
+  const categories = useSupabaseQuery('categories', { eq: { userId: user.id } }, [user.id]) || [];
   const [searchTerm, setSearchTerm] = useState('');
+
+  const getCategoryGolonganConfig = (catName) => {
+    const catObj = categories.find(c => c.name === catName);
+    if (catObj) {
+      const needsGolonganDefault = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(catObj.name);
+      const needsGolongan = catObj.needsGolongan !== undefined && catObj.needsGolongan !== null ? catObj.needsGolongan : needsGolonganDefault;
+      
+      const optionsDefault = needsGolongan ? 'Ringan, Menengah, Berat' : '';
+      const optionsStr = catObj.golonganOptions !== undefined && catObj.golonganOptions !== null ? catObj.golonganOptions : optionsDefault;
+      
+      const options = optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(s => s) : [];
+      return { needsGolongan, options };
+    }
+    
+    const needsGolongan = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(catName);
+    const options = needsGolongan ? ['Ringan', 'Menengah', 'Berat'] : [];
+    return { needsGolongan, options };
+  };
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
@@ -107,7 +126,13 @@ export default function PestDatabase() {
        const matchedItem = inventoryItems.find(item => item.name === value);
        if (matchedItem) {
          if (matchedItem.zatAktif) newObat[index].zatAktif = matchedItem.zatAktif;
-         if (matchedItem.golongan) newObat[index].golongan = matchedItem.golongan;
+         
+         const config = getCategoryGolonganConfig(matchedItem.category);
+         if (config.needsGolongan) {
+           newObat[index].golongan = matchedItem.golongan || config.options[0] || '';
+         } else {
+           newObat[index].golongan = '';
+         }
        }
     }
     
@@ -327,9 +352,11 @@ export default function PestDatabase() {
                                 <span className="font-semibold text-gray-200">{o.merk}</span>
                                 <span className="text-gray-400 text-xs ml-2">({o.zatAktif})</span>
                               </div>
-                              <span className={`text-xs font-bold px-2 py-1 rounded bg-white/5 ${getGolonganColor(o.golongan)}`}>
-                                {o.golongan}
-                              </span>
+                              {o.golongan && (
+                                <span className={`text-xs font-bold px-2 py-1 rounded bg-white/5 ${getGolonganColor(o.golongan)}`}>
+                                  {o.golongan}
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -454,25 +481,39 @@ export default function PestDatabase() {
                 )}
                 
                 <div className="flex flex-col gap-3">
-                  {formData.obat.map((o, idx) => (
-                    <div key={idx} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px_32px] gap-2 items-center bg-forest-surface p-2 rounded-lg border border-white/5">
-                      <input type="text" list="obat-suggestions" placeholder="Pilih/Ketik Merk..." value={o.merk} onChange={e => updateObat(idx, 'merk', e.target.value)} className="w-full min-w-0 bg-transparent border-b border-white/10 px-2 py-1 text-sm text-white outline-none focus:border-emerald-500" />
-                      <input type="text" placeholder="Zat Aktif" value={o.zatAktif} onChange={e => updateObat(idx, 'zatAktif', e.target.value)} className="w-full min-w-0 bg-transparent border-b border-white/10 px-2 py-1 text-sm text-white outline-none focus:border-emerald-500" />
-                      <CustomSelect 
-                        value={o.golongan} 
-                        onChange={val => updateObat(idx, 'golongan', val)} 
-                        options={[
-                          { value: 'Ringan', label: 'Ringan' },
-                          { value: 'Menengah', label: 'Menengah' },
-                          { value: 'Berat', label: 'Berat' }
-                        ]}
-                        className="w-full shrink-0"
-                      />
-                      <button type="button" onClick={() => removeObat(idx)} className="p-1.5 text-red-400 hover:bg-red-500/20 rounded shrink-0 flex items-center justify-center">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
+                  {formData.obat.map((o, idx) => {
+                    const matchedItem = inventoryItems.find(item => item.name === o.merk);
+                    const config = matchedItem 
+                      ? getCategoryGolonganConfig(matchedItem.category)
+                      : { 
+                          needsGolongan: true, 
+                          options: ['Ringan', 'Menengah', 'Berat'] 
+                        };
+                    
+                    return (
+                      <div key={idx} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px_32px] gap-2 items-center bg-forest-surface p-2 rounded-lg border border-white/5">
+                        <input type="text" list="obat-suggestions" placeholder="Pilih/Ketik Merk..." value={o.merk} onChange={e => updateObat(idx, 'merk', e.target.value)} className="w-full min-w-0 bg-transparent border-b border-white/10 px-2 py-1 text-sm text-white outline-none focus:border-emerald-500" />
+                        <input type="text" placeholder="Zat Aktif" value={o.zatAktif} onChange={e => updateObat(idx, 'zatAktif', e.target.value)} className="w-full min-w-0 bg-transparent border-b border-white/10 px-2 py-1 text-sm text-white outline-none focus:border-emerald-500" />
+                        
+                        {config.needsGolongan ? (
+                          <CustomSelect 
+                            value={o.golongan || config.options[0] || ''} 
+                            onChange={val => updateObat(idx, 'golongan', val)} 
+                            options={config.options.map(opt => ({ value: opt, label: opt }))}
+                            className="w-full shrink-0"
+                          />
+                        ) : (
+                          <div className="text-xs text-gray-500 text-center py-2 bg-black/15 rounded border border-white/5 font-medium shrink-0 w-[120px] select-none">
+                            Tidak Butuh
+                          </div>
+                        )}
+                        
+                        <button type="button" onClick={() => removeObat(idx)} className="p-1.5 text-red-400 hover:bg-red-500/20 rounded shrink-0 flex items-center justify-center">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    );
+                  })}
                   {formData.obat.length === 0 && <p className="text-xs text-gray-500 text-center italic">Belum ada obat ditambahkan</p>}
                 </div>
               </div>

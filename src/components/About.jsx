@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.7) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.8) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,10 +49,26 @@ export default function About() {
 
             <h3 className="text-lg font-semibold text-white mt-8 mb-3">Riwayat Pembaruan (Changelog)</h3>
             <div className="space-y-4">
-              {/* v1.1.7 - Bright Emerald (Latest) */}
+              {/* v1.1.8 - Bright Emerald (Latest) */}
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.7 (Thread-Safe Forms & Dynamic Categories)</span>
+                  <span className="font-bold text-emerald-400">v1.1.8 (Customizable Category Groups & Form Sync)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Konfigurasi dinamis kategori produk: pengguna dapat mengatur apakah suatu kategori membutuhkan golongan (tingkat bahaya/kemurnian) dan zat aktif.</li>
+                  <li>Pengaturan opsi pilihan golongan kustom yang dipisahkan dengan tanda koma (misalnya 'Organik, Kimia' atau 'Ringan, Menengah, Berat') pada masing-masing kategori.</li>
+                  <li>Sinkronisasi otomatis form produk: otomatis mengosongkan nilai golongan untuk kategori yang tidak membutuhkan golongan, dan memilih opsi pertama untuk kategori yang membutuhkannya.</li>
+                  <li>Integrasi pada database hama: mendeteksi jenis golongan dan zat aktif secara dinamis dari produk obat yang dipilih di inventaris, serta menyembunyikan input golongan dengan penanda "Tidak Butuh" yang elegan jika kategori obat tersebut tidak memerlukannya.</li>
+                  <li>Penyelarasan tampilan kartu hama dan badge produk di gudang agar menyembunyikan informasi golongan jika tidak diperlukan.</li>
+                  <li>Pembaruan panduan instalasi database Supabase (`panduan_kategori.md`) lengkap dengan instruksi migrasi `ALTER TABLE` tanpa merusak data yang ada.</li>
+                </ul>
+              </div>
+
+              {/* v1.1.7 - Faded Emerald border and text (Recent) */}
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.7 (Thread-Safe Forms & Dynamic Categories)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
