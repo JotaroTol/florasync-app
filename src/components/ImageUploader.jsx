@@ -87,7 +87,7 @@ export default function ImageUploader({ value, onChange, label = "Upload Foto", 
       
       {/* Crop Modal */}
       {imageSrc && (
-        <div className="fixed inset-0 z-[300] flex flex-col bg-black/90 backdrop-blur-md">
+        <div className="dynamic-overlay flex flex-col bg-black/90 backdrop-blur-md">
           <div className="flex-1 relative">
             <Cropper
               image={imageSrc}

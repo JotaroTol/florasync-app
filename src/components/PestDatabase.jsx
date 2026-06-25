@@ -549,7 +549,7 @@ export default function PestDatabase() {
 
       {/* Image Preview Modal - Smooth macOS/iOS-style spring zoom transition */}
       <div 
-        className={`fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.3,0.64,1)] ${
+        className={`dynamic-overlay flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.3,0.64,1)] ${
           previewImage ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'
         }`}
         onClick={() => setPreviewImage(null)}

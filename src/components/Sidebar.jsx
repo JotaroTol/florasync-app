@@ -12,6 +12,14 @@ export default function Sidebar({ activeTab }) {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
 
+  React.useEffect(() => {
+    if (isCollapsed) {
+      document.documentElement.classList.add('sidebar-collapsed');
+    } else {
+      document.documentElement.classList.remove('sidebar-collapsed');
+    }
+  }, [isCollapsed]);
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { id: 'locations', label: 'Manajemen Lahan', icon: Map, path: '/locations' },
