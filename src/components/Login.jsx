@@ -222,11 +222,6 @@ export default function Login({ onLogin }) {
               </p>
             )}
           </div>
-
-          <div className="mt-6 pt-6 border-t border-white/5 text-center text-xs text-gray-500 flex flex-col gap-1">
-            <p>Admin: admin / password</p>
-            <p>Tamu: tamu / password</p>
-          </div>
         </div>
       </div>
     </div>
