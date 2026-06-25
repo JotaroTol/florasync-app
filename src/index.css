@@ -45,6 +45,8 @@
     z-index: 300;
     left: 0;
     width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
   @media (min-width: 768px) {
