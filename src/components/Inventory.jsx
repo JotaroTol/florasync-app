@@ -21,6 +21,7 @@ export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (previewImage) {
@@ -87,39 +88,48 @@ export default function Inventory() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const inputAmount = parseFloat(formData.stock) || 0;
-    
-    let finalStock = inputAmount;
-    
-    if (editingItem) {
-      if (!editMode) {
-        finalStock = editingItem.stock;
-      } else if (editMode === 'add') {
-        finalStock = editingItem.stock + inputAmount;
-      } else if (editMode === 'waste') {
-        finalStock = Math.max(0, editingItem.stock - inputAmount);
-      } else {
-        finalStock = inputAmount;
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const inputAmount = parseFloat(formData.stock) || 0;
+      
+      let finalStock = inputAmount;
+      
+      if (editingItem) {
+        if (!editMode) {
+          finalStock = editingItem.stock;
+        } else if (editMode === 'add') {
+          finalStock = editingItem.stock + inputAmount;
+        } else if (editMode === 'waste') {
+          finalStock = Math.max(0, editingItem.stock - inputAmount);
+        } else {
+          finalStock = inputAmount;
+        }
       }
-    }
 
-    const dataToSave = {
-      userId: user.id,
-      name: formData.name,
-      category: formData.category,
-      unit: formData.unit,
-      photoUrl: formData.photoUrl,
-      stock: finalStock,
-      zatAktif: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.zatAktif : '',
-      golongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.golongan : 'Menengah'
-    };
+      const dataToSave = {
+        userId: user.id,
+        name: formData.name,
+        category: formData.category,
+        unit: formData.unit,
+        photoUrl: formData.photoUrl,
+        stock: finalStock,
+        zatAktif: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.zatAktif : '',
+        golongan: ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(formData.category) ? formData.golongan : 'Menengah'
+      };
 
-    if (editingItem) {
-      await db.inventory.update(editingItem.id, dataToSave);
-    } else {
-      await db.inventory.add(dataToSave);
+      if (editingItem) {
+        await db.inventory.update(editingItem.id, dataToSave);
+      } else {
+        await db.inventory.add(dataToSave);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Gagal menyimpan produk. Silakan coba lagi.");
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -352,8 +362,28 @@ export default function Inventory() {
               </div>
 
               <div className="flex gap-3 mt-4 pt-4 border-t border-white/10">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-500/20">Simpan Produk</button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800/80 text-white font-bold rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    "Simpan Produk"
+                  )}
+                </button>
               </div>
             </form>
           </div>

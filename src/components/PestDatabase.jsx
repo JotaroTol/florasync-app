@@ -15,6 +15,7 @@ export default function PestDatabase() {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
   const [activePreviewImage, setActivePreviewImage] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   React.useEffect(() => {
     if (previewImage) {
@@ -120,23 +121,32 @@ export default function PestDatabase() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const payload = {
-      userId: user.id,
-      name: formData.name,
-      symptoms: formData.symptoms.map(s => s.trim()).filter(s => s),
-      kategoriTanaman: formData.kategoriTanaman.map(s => s.trim()).filter(s => s),
-      penyebab: formData.penyebab,
-      preventif: formData.preventif,
-      photoUrl: formData.photoUrl,
-      obat: formData.obat.filter(o => o.merk || o.zatAktif)
-    };
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const payload = {
+        userId: user.id,
+        name: formData.name,
+        symptoms: formData.symptoms.map(s => s.trim()).filter(s => s),
+        kategoriTanaman: formData.kategoriTanaman.map(s => s.trim()).filter(s => s),
+        penyebab: formData.penyebab,
+        preventif: formData.preventif,
+        photoUrl: formData.photoUrl,
+        obat: formData.obat.filter(o => o.merk || o.zatAktif)
+      };
 
-    if (editingId) {
-      await db.pests.update(editingId, payload);
-    } else {
-      await db.pests.add(payload);
+      if (editingId) {
+        await db.pests.update(editingId, payload);
+      } else {
+        await db.pests.add(payload);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving pest:", error);
+      alert("Gagal menyimpan data hama/penyakit. Silakan coba lagi.");
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -465,8 +475,28 @@ export default function PestDatabase() {
               </div>
 
               <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-white/10">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 rounded-xl font-bold text-gray-400 hover:bg-white/5 transition-colors">Batal</button>
-                <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-all">Simpan Data</button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  disabled={isSaving}
+                  className="px-6 py-2 rounded-xl font-bold text-gray-400 hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800/80 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    "Simpan Data"
+                  )}
+                </button>
               </div>
             </form>
           </div>
