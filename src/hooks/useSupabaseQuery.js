@@ -35,7 +35,7 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
 
       if (error) {
         console.error(`Error fetching ${table}:`, error);
-        if (isMounted) setData(single ? null : []);
+        // Do NOT clear existing data on transient fetch errors to prevent data from suddenly disappearing
       } else {
         if (isMounted) {
           if (single) {
