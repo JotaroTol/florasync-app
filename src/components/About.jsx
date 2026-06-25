@@ -21,7 +21,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.1) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.2) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,7 +49,18 @@ export default function About() {
             <div className="space-y-4">
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.1 (Security & Stability)</span>
+                  <span className="font-bold text-emerald-400">v1.1.2 (Instant Updates)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Implementasi mekanisme <em>local pub-sub</em> pada basis data proxy (<code>db.js</code>) untuk mendeteksi operasi tulis (<em>insert, update, delete</em>) secara instan.</li>
+                  <li>Integrasi sistem pembaruan instan pada <em>query hook</em> agar data yang baru ditambahkan langsung muncul di layar tanpa perlu menyegarkan (<em>refresh</em>) browser.</li>
+                  <li>Penyediaan sistem re-fetch cadangan otomatis (*zero-latency fallback*) yang aktif meskipun fitur Realtime di Supabase belum diaktifkan.</li>
+                </ul>
+              </div>
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.1 (Security & Stability)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
