@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-forest-50: #f0fdf4;
+  --color-forest-100: #dcfce7;
+  --color-forest-500: #22c55e;
+  --color-forest-700: #15803d;
+  --color-forest-900: #14532d;
+  --color-forest-950: #052e16;
+  --color-forest-bg: #0f1714;
+  --color-forest-surface: #172621;
+}
+
+@layer base {
+  body {
+    @apply bg-forest-bg text-gray-100 min-h-screen overflow-x-hidden;
+    font-family: 'Outfit', sans-serif;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(52, 211, 153, 0.03), transparent 25%);
+  }
+}
+
+@layer components {
+  .card-glass {
+    @apply bg-forest-surface/60 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl transition-all duration-300;
+  }
+  .card-glass:hover {
+    @apply shadow-2xl border-white/20 -translate-y-1;
+  }
+}
