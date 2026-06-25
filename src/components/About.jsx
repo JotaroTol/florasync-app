@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.3) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.4) • By JotaroTol</p>
             </div>
           </div>
 
@@ -51,7 +51,17 @@ export default function About() {
             <div className="space-y-4">
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.3 (ZPT Form & Collapsible Log)</span>
+                  <span className="font-bold text-emerald-400">v1.1.4 (Collapsible Sidebar & Logo Fix)</span>
+                  <span className="text-xs text-gray-500">25 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Pengembangan fitur **Bilah Samping Lipat (Collapsible Sidebar)** yang dapat dikecilkan secara dinamis untuk menyisakan logo dan ikon navigasi saja, dengan penyimpanan preferensi di localStorage.</li>
+                  <li>Perbaikan rujukan ikon web (favicon) pada berkas <code>index.html</code> dari <code>/vite.svg</code> ke <code>/favicon.svg</code> sehingga logo web resmi langsung muncul di tab browser.</li>
+                </ul>
+              </div>
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.3 (ZPT Form & Collapsible Log)</span>
                   <span className="text-xs text-gray-500">25 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
