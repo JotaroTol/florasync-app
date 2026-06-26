@@ -106,21 +106,6 @@ export default function PlantDetail() {
   const [editingEventId, setEditingEventId] = useState(null);
   const [showReport, setShowReport] = useState(false);
 
-  let calculatedTotal = 0;
-  let inventoryWarning = '';
-
-  if (activityType === 'produk' && selectedProductId && doseInput) {
-    const prod = inventory.find(i => i.id === parseInt(selectedProductId));
-    const val = parseFloat(doseInput) || 0;
-    calculatedTotal = calcType === 'per_plant' ? val * (plant?.plantCount || 1) : val;
-
-    if (prod && calculatedTotal > prod.stock) {
-      inventoryWarning = `Peringatan: Stok ${prod.name} tidak mencukupi! Kebutuhan ${calculatedTotal} ${prod.unit}, sisa gudang ${prod.stock} ${prod.unit}.`;
-    }
-  }
-
-  if (!plant) return <div className="p-10">Loading...</div>;
-
   const [productCategories, setProductCategories] = useState(['Pupuk', 'Insektisida', 'Fungisida', 'Herbisida', 'ZPT', 'Lainnya']);
 
   useEffect(() => {
@@ -137,6 +122,21 @@ export default function PlantDetail() {
     };
     loadCategories();
   }, [user.id]);
+
+  let calculatedTotal = 0;
+  let inventoryWarning = '';
+
+  if (activityType === 'produk' && selectedProductId && doseInput) {
+    const prod = inventory.find(i => i.id === parseInt(selectedProductId));
+    const val = parseFloat(doseInput) || 0;
+    calculatedTotal = calcType === 'per_plant' ? val * (plant?.plantCount || 1) : val;
+
+    if (prod && calculatedTotal > prod.stock) {
+      inventoryWarning = `Peringatan: Stok ${prod.name} tidak mencukupi! Kebutuhan ${calculatedTotal} ${prod.unit}, sisa gudang ${prod.stock} ${prod.unit}.`;
+    }
+  }
+
+  if (!plant) return <div className="p-10">Loading...</div>;
   const filteredInventory = inventory.filter(i => i.category === prodCategoryFilter);
 
   // Compute Last Fertilized
