@@ -65,7 +65,7 @@ export default function Sidebar({ activeTab }) {
             isCollapsed ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-40 opacity-100'
           }`}>
             <span className="pb-0.5 leading-none text-emerald-400 font-bold text-xl">FloraSync</span>
-            <span className="text-[11px] text-gray-500 font-medium leading-none mt-1">v1.1.9</span>
+            <span className="text-[11px] text-gray-500 font-medium leading-none mt-1">v1.1.10</span>
           </div>
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.9) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.10) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,10 +49,21 @@ export default function About() {
 
             <h3 className="text-lg font-semibold text-white mt-8 mb-3">Riwayat Pembaruan (Changelog)</h3>
             <div className="space-y-4">
-              {/* v1.1.9 - Bright Emerald (Latest) */}
+              {/* v1.1.10 - Bright Emerald (Latest) */}
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.9 (Perbaikan Eror Rincian Tanaman)</span>
+                  <span className="font-bold text-emerald-400">v1.1.10 (Perhitungan Umur HST Otomatis)</span>
+                  <span className="text-xs text-gray-500">26 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Mengubah perhitungan umur tanaman otomatis ke HST jika sudah melewati tanggal pindah tanam</li>
+                  <li>Menampilkan Total Umur (HSS) dan masa tanam dalam HST di halaman Riwayat Lengkap</li>
+                </ul>
+              </div>
+              {/* v1.1.9 - Faded Emerald border and text (Recent) */}
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.9 (Perbaikan Eror Rincian Tanaman)</span>
                   <span className="text-xs text-gray-500">26 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">

@@ -222,27 +222,22 @@ export default function PlantDetail() {
       return 'Selesai';
     }
 
-    if (plant.phase === 'Semai') {
-      if (!plant.sownDate || plant.sownDate === '-') return '0 HSS';
-      const sown = new Date(plant.sownDate);
-      const diffTime = Math.abs(today - sown);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      return `${diffDays} HSS`;
-    } else {
-      if (!plant.plantedDate || plant.plantedDate === '-') {
-         if (plant.sownDate && plant.sownDate !== '-') {
-            const sown = new Date(plant.sownDate);
-            const diffTime = Math.abs(today - sown);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            return `${diffDays} HSS`;
-         }
-         return 'Belum pindah tanam';
-      }
+    // Jika sudah ada tanggal tanam dan tanggal tersebut sudah lewat atau hari ini, gunakan HST
+    if (plant.plantedDate && plant.plantedDate !== '-') {
       const planted = new Date(plant.plantedDate);
-      const diffTime = Math.abs(today - planted);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      return `${diffDays} HST`;
+      if (planted <= today) {
+        const diffTime = Math.abs(today - planted);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        return `${diffDays} HST`;
+      }
     }
+
+    // Fallback ke HSS jika belum pindah tanam
+    if (!plant.sownDate || plant.sownDate === '-') return '0 HSS';
+    const sown = new Date(plant.sownDate);
+    const diffTime = Math.abs(today - sown);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    return `${diffDays} HSS`;
   };
 
   const calculateSemaiDuration = (plant) => {
@@ -257,6 +252,13 @@ export default function PlantDetail() {
     const planted = new Date(plant.plantedDate);
     const end = plant.completedDate ? new Date(plant.completedDate) : new Date();
     return Math.ceil(Math.abs(end - planted) / (1000 * 60 * 60 * 24));
+  };
+
+  const calculateTotalHSS = (plant) => {
+    if (!plant.sownDate || plant.sownDate === '-') return 0;
+    const sown = new Date(plant.sownDate);
+    const end = plant.completedDate ? new Date(plant.completedDate) : new Date();
+    return Math.ceil(Math.abs(end - sown) / (1000 * 60 * 60 * 24));
   };
 
   const getReportData = () => {
@@ -1055,11 +1057,14 @@ export default function PlantDetail() {
                  <p className="text-white font-medium"><span className="text-gray-500 mr-2 text-sm">Populasi:</span>{plant.plantCount} Pohon</p>
                </div>
                <div className="bg-forest-bg p-4 rounded-xl border border-white/5">
-                 <h3 className="text-gray-400 text-sm font-semibold mb-2">Siklus Hidup</h3>
-                 <p className="text-white font-medium mb-1"><span className="text-gray-500 mr-2 text-sm">Semai:</span>{plant.sownDate && plant.sownDate !== '-' ? `${plant.sownDate} (${calculateSemaiDuration(plant)} Hari)` : 'Tidak dicatat'}</p>
-                 <p className="text-white font-medium mb-1"><span className="text-gray-500 mr-2 text-sm">Tanam:</span>{plant.plantedDate && plant.plantedDate !== '-' ? `${plant.plantedDate} (${calculateTanamDuration(plant)} Hari)` : 'Belum/Tidak dicatat'}</p>
-                 <p className="text-white font-medium"><span className="text-gray-500 mr-2 text-sm">Selesai:</span>{plant.completedDate || 'Belum selesai'}</p>
-               </div>
+                  <h3 className="text-gray-400 text-sm font-semibold mb-2">Siklus Hidup</h3>
+                  <p className="text-white font-medium mb-1"><span className="text-gray-500 mr-2 text-sm">Semai:</span>{plant.sownDate && plant.sownDate !== '-' ? `${plant.sownDate} (${calculateSemaiDuration(plant)} Hari)` : 'Tidak dicatat'}</p>
+                  <p className="text-white font-medium mb-1"><span className="text-gray-500 mr-2 text-sm">Tanam:</span>{plant.plantedDate && plant.plantedDate !== '-' ? `${plant.plantedDate} (${calculateTanamDuration(plant)} HST)` : 'Belum/Tidak dicatat'}</p>
+                  {plant.plantedDate && plant.plantedDate !== '-' && plant.sownDate && plant.sownDate !== '-' && (
+                    <p className="text-white font-medium mb-1"><span className="text-gray-500 mr-2 text-sm">Total Umur:</span>{calculateTotalHSS(plant)} HSS</p>
+                  )}
+                  <p className="text-white font-medium"><span className="text-gray-500 mr-2 text-sm">Selesai:</span>{plant.completedDate || 'Belum selesai'}</p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
