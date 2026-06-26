@@ -11,11 +11,13 @@ import { subscribeToTable } from '../db';
  */
 export function useSupabaseQuery(table, options = {}, deps = [], single = false) {
   const [data, setData] = useState(single ? null : []);
+  const [loading, setLoading] = useState(true);
   // Use a ref for the channel so we can clean it up reliably
   const channelRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
+    setLoading(true);
 
     const fetchData = async () => {
       let query = supabase.from(table).select('*');
@@ -36,7 +38,9 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
 
       if (error) {
         console.error(`Error fetching ${table}:`, error);
-        // Do NOT clear existing data on transient fetch errors to prevent data from suddenly disappearing
+        if (isMounted) {
+          setLoading(false);
+        }
       } else {
         if (isMounted) {
           if (single) {
@@ -45,6 +49,7 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
           } else {
             setData(result || []);
           }
+          setLoading(false);
         }
       }
     };
@@ -89,6 +94,16 @@ export function useSupabaseQuery(table, options = {}, deps = [], single = false)
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
+
+  // Attach non-enumerable loading property to data if it is an object/array
+  if (data && (Array.isArray(data) || typeof data === 'object')) {
+    Object.defineProperty(data, 'loading', {
+      value: loading,
+      writable: true,
+      configurable: true,
+      enumerable: false
+    });
+  }
 
   return data;
 }

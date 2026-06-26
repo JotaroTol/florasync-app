@@ -109,51 +109,67 @@ export default function Locations() {
         )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {locationsData.map(loc => (
-          <div key={loc.id} className="card-glass overflow-hidden flex flex-col group">
-            <div className="h-40 bg-forest-surface relative">
-              {loc.photoUrl ? (
-                <img src={loc.photoUrl} alt={loc.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
-                  <MapPin size={32} className="mb-2 opacity-50" />
-                  <span className="text-xs">Tidak ada foto lahan</span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-forest-bg via-transparent to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                <h3 className="text-xl font-bold text-white shadow-sm">{loc.name}</h3>
-                {!isGuest && (
-                  <div className="flex gap-2">
-                    <button onClick={() => handleOpenModal(loc)} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-gray-300 hover:text-white hover:bg-blue-500/50 transition-colors"><Edit2 size={14} /></button>
-                    <button onClick={() => handleDelete(loc.id)} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-500/50 transition-colors"><Trash2 size={14} /></button>
+      {locationsData.loading ? (
+        <div className="flex flex-col items-center justify-center gap-4 py-20 text-gray-400">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
+            <MapPin className="w-6 h-6 text-blue-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+          </div>
+          <span className="text-sm font-semibold animate-pulse text-blue-400/80">Memuat data lahan...</span>
+        </div>
+      ) : locationsData.length === 0 ? (
+        <div className="text-center p-12 card-glass text-gray-500 max-w-md mx-auto">
+          <MapPin size={48} className="mx-auto mb-4 text-blue-500/30" />
+          <p className="font-semibold text-gray-300">Belum ada lahan</p>
+          <p className="text-sm text-gray-500 mt-1">Tambahkan lahan pertama Anda untuk mulai mendaftarkan tanaman.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {locationsData.map(loc => (
+            <div key={loc.id} className="card-glass overflow-hidden flex flex-col group">
+              <div className="h-40 bg-forest-surface relative">
+                {loc.photoUrl ? (
+                  <img src={loc.photoUrl} alt={loc.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                    <MapPin size={32} className="mb-2 opacity-50" />
+                    <span className="text-xs">Tidak ada foto lahan</span>
                   </div>
                 )}
-              </div>
-            </div>
-            
-            <div className="p-5 flex flex-col gap-4 flex-1">
-              <div className="flex flex-col gap-1 text-sm">
-                <div className="flex items-start gap-2 text-gray-300">
-                  <MapPin size={16} className="text-blue-400 shrink-0 mt-0.5" />
-                  <span>{loc.address || 'Alamat tidak diisi'}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-forest-bg via-transparent to-transparent"></div>
+                <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                  <h3 className="text-xl font-bold text-white shadow-sm">{loc.name}</h3>
+                  {!isGuest && (
+                    <div className="flex gap-2">
+                      <button onClick={() => handleOpenModal(loc)} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-gray-300 hover:text-white hover:bg-blue-500/50 transition-colors"><Edit2 size={14} /></button>
+                      <button onClick={() => handleDelete(loc.id)} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-500/50 transition-colors"><Trash2 size={14} /></button>
+                    </div>
+                  )}
                 </div>
-                {loc.coordinates && (
-                  <div className="flex items-center gap-2 text-gray-400 text-xs ml-6">
-                    <Navigation size={12} /> {loc.coordinates}
-                  </div>
-                )}
               </div>
               
-              <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="text-sm text-gray-400">Luas Area:</span>
-                <span className="font-bold text-blue-400">{loc.area} m²</span>
+              <div className="p-5 flex flex-col gap-4 flex-1">
+                <div className="flex flex-col gap-1 text-sm">
+                  <div className="flex items-start gap-2 text-gray-300">
+                    <MapPin size={16} className="text-blue-400 shrink-0 mt-0.5" />
+                    <span>{loc.address || 'Alamat tidak diisi'}</span>
+                  </div>
+                  {loc.coordinates && (
+                    <div className="flex items-center gap-2 text-gray-400 text-xs ml-6">
+                      <Navigation size={12} /> {loc.coordinates}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
+                  <span className="text-sm text-gray-400">Luas Area:</span>
+                  <span className="font-bold text-blue-400">{loc.area} m²</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add / Edit Modal */}
       {isModalOpen && (

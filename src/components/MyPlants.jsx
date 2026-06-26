@@ -146,7 +146,16 @@ export default function MyPlants() {
               </tr>
             </thead>
             <tbody>
-              {filteredPlants.length === 0 ? (
+              {plantsData.loading ? (
+                <tr>
+                  <td colSpan="5" className="p-8">
+                    <div className="flex flex-col items-center justify-center gap-3 py-8 text-gray-400">
+                      <Sprout size={36} className="text-emerald-500 animate-bounce" />
+                      <span className="text-sm font-medium animate-pulse text-emerald-400/80">Memuat data tanaman...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredPlants.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center p-8 text-gray-500">Tidak ada data tanaman yang sesuai.</td>
                 </tr>

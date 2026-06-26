@@ -402,8 +402,17 @@ export default function Inventory() {
                 {!isGuest && <th className="p-4 text-xs uppercase tracking-wider text-gray-400 font-medium text-right">Aksi</th>}
               </tr>
             </thead>
-            <tbody>
-              {filteredInventory.length === 0 ? (
+             <tbody>
+              {rawInventoryData.loading ? (
+                <tr>
+                  <td colSpan="5" className="p-8">
+                    <div className="flex flex-col items-center justify-center gap-3 py-8 text-gray-400">
+                      <Package size={36} className="text-amber-400 animate-bounce" />
+                      <span className="text-sm font-medium animate-pulse text-amber-400/80">Memuat data produk...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredInventory.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center p-8 text-gray-500">Tidak ada produk yang sesuai.</td>
                 </tr>

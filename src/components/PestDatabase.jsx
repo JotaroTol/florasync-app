@@ -280,7 +280,15 @@ export default function PestDatabase() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredPests.length === 0 ? (
+            {pests.loading ? (
+              <div className="col-span-full flex flex-col items-center justify-center gap-4 py-20 text-gray-400">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full border-4 border-red-500/20 border-t-red-500 animate-spin"></div>
+                  <Bug className="w-6 h-6 text-red-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                </div>
+                <span className="text-sm font-semibold animate-pulse text-red-400/80">Memuat database hama & penyakit...</span>
+              </div>
+            ) : filteredPests.length === 0 ? (
               <div className="col-span-full text-center py-10 text-gray-500">
                 <CheckCircle size={48} className="mx-auto mb-4 opacity-20" />
                 <p>Tidak ada data yang cocok dengan pencarian atau gejala.</p>

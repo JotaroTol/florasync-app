@@ -136,7 +136,17 @@ export default function PlantDetail() {
     }
   }
 
-  if (!plant) return <div className="p-10">Loading...</div>;
+  if (!plant) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] text-gray-400 gap-4">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin"></div>
+          <Leaf className="w-6 h-6 text-emerald-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+        </div>
+        <span className="text-sm font-semibold animate-pulse text-emerald-400/80">Memuat profil tanaman...</span>
+      </div>
+    );
+  }
   const filteredInventory = inventory.filter(i => i.category === prodCategoryFilter);
 
   // Compute Last Fertilized
