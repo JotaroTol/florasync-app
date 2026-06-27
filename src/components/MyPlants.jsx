@@ -5,6 +5,7 @@ import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { db } from '../db';
 import { UserContext } from '../App';
 import ImageUploader from './ImageUploader';
+import CustomSelect from './CustomSelect';
 
 export default function MyPlants() {
   const navigate = useNavigate();
@@ -58,6 +59,25 @@ export default function MyPlants() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (isSavingRef.current) return;
+
+    // Failsafe 1: Tanggal Tanam tidak boleh sebelum Tanggal Semai
+    if (editingPlant.plantedDate && editingPlant.plantedDate !== '-' && editingPlant.sownDate && editingPlant.sownDate !== '-') {
+      if (editingPlant.plantedDate < editingPlant.sownDate) {
+        alert("Gagal menyimpan: Tanggal Tanam tidak boleh sebelum Tanggal Semai!");
+        return;
+      }
+    }
+
+    // Failsafe 2: Tanggal Semai tidak boleh di masa depan
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (editingPlant.sownDate && editingPlant.sownDate !== '-') {
+      if (editingPlant.sownDate > todayStr) {
+        alert("Gagal menyimpan: Tanggal Semai tidak boleh di masa depan!");
+        return;
+      }
+    }
+
     isSavingRef.current = true;
     setIsSaving(true);
     try {
@@ -71,13 +91,12 @@ export default function MyPlants() {
         photoUrl: editingPlant.photoUrl || ''
       };
 
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const todayStrLocal = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       if (editingPlant.id) {
         let finalPhase = editingPlant.phase;
         if (editingPlant.phase === 'Semai' && dataToSave.plantedDate && dataToSave.plantedDate !== '-') {
-          if (dataToSave.plantedDate <= todayStr) {
+          if (dataToSave.plantedDate <= todayStrLocal) {
             finalPhase = 'Vegetatif';
           }
         }
@@ -88,7 +107,7 @@ export default function MyPlants() {
       } else {
         let finalPhase = "Semai";
         if (dataToSave.plantedDate && dataToSave.plantedDate !== '-') {
-          if (dataToSave.plantedDate <= todayStr) {
+          if (dataToSave.plantedDate <= todayStrLocal) {
             finalPhase = "Vegetatif";
           }
         }
@@ -248,15 +267,13 @@ export default function MyPlants() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Pilih Lahan (Lokasi)</label>
-                  <select 
-                    value={editingPlant.locationId} 
-                    onChange={e => setEditingPlant({...editingPlant, locationId: e.target.value})} 
-                    className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none appearance-none"
-                    required
-                  >
-                    <option value="" disabled>-- Pilih Lahan --</option>
-                    {locationsData.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                  </select>
+                  <CustomSelect 
+                    value={editingPlant.locationId ? editingPlant.locationId.toString() : ''} 
+                    onChange={val => setEditingPlant({...editingPlant, locationId: val})} 
+                    options={locationsData.map(l => ({ value: l.id.toString(), label: l.name }))}
+                    placeholder="-- Pilih Lahan --"
+                    className="w-full"
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Populasi (Jml Pohon)</label>

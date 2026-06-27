@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Users, Plus, Edit2, Trash2, Shield, Lock, X, Check } from 'lucide-react';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { db } from '../db';
+import CustomSelect from './CustomSelect';
 
 export default function UserManagement() {
   const users = useSupabaseQuery('users', {}) || [];
@@ -161,55 +162,70 @@ export default function UserManagement() {
               </tr>
             </thead>
             <tbody>
-              {users.map(u => (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="p-4">
-                    <div className="font-semibold text-gray-100">{u.name}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-300 font-mono">@{u.username}</span>
-                      {u.role === 'owner' || u.role === 'admin' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                          <Shield size={12} /> Admin
-                        </span>
-                      ) : u.role === 'user' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center gap-1">
-                          User Biasa
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                          Tamu
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    {u.role === 'owner' || u.role === 'admin' || u.role === 'user' ? (
-                      <span className="text-xs text-emerald-400/70">Akses Penuh (Semua Fitur)</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {u.permissions?.map(p => {
-                          const feat = availableFeatures.find(f => f.id === p);
-                          return feat ? (
-                            <span key={p} className="text-[10px] px-1.5 py-0.5 rounded bg-forest-surface text-gray-300 border border-white/5">
-                              {feat.label}
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex justify-end gap-3">
-                      <button onClick={() => handleOpenModal(u)} className="text-gray-400 hover:text-emerald-400 transition-all"><Edit2 size={16} /></button>
-                      {u.id !== 1 && (
-                        <button onClick={() => handleDelete(u.id)} className="text-gray-400 hover:text-red-400 transition-all"><Trash2 size={16} /></button>
-                      )}
+              {users.loading ? (
+                <tr>
+                  <td colSpan="4" className="p-8">
+                    <div className="flex flex-col items-center justify-center gap-3 py-8 text-gray-400">
+                      <Users size={36} className="text-emerald-500 animate-bounce" />
+                      <span className="text-sm font-medium animate-pulse text-emerald-400/80">Memuat data pengguna...</span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center p-8 text-gray-500">Tidak ada pengguna terdaftar.</td>
+                </tr>
+              ) : (
+                users.map(u => (
+                  <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="p-4">
+                      <div className="font-semibold text-gray-100">{u.name}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-300 font-mono">@{u.username}</span>
+                        {u.role === 'owner' || u.role === 'admin' ? (
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <Shield size={12} /> Admin
+                          </span>
+                        ) : u.role === 'user' ? (
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+                            User Biasa
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            Tamu
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {u.role === 'owner' || u.role === 'admin' || u.role === 'user' ? (
+                        <span className="text-xs text-emerald-400/70">Akses Penuh (Semua Fitur)</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {u.permissions?.map(p => {
+                            const feat = availableFeatures.find(f => f.id === p);
+                            return feat ? (
+                              <span key={p} className="text-[10px] px-1.5 py-0.5 rounded bg-forest-surface text-gray-300 border border-white/5">
+                                {feat.label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex justify-end gap-3">
+                        <button onClick={() => handleOpenModal(u)} className="text-gray-400 hover:text-emerald-400 transition-all"><Edit2 size={16} /></button>
+                        {u.id !== 1 && (
+                          <button onClick={() => handleDelete(u.id)} className="text-gray-400 hover:text-red-400 transition-all"><Trash2 size={16} /></button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -245,15 +261,16 @@ export default function UserManagement() {
                   </div>
                   <div>
                     <label className="text-xs text-gray-400 uppercase mb-1 block">Role (Hak Akses)</label>
-                    <select 
+                    <CustomSelect 
                       value={formData.role} 
-                      onChange={e => setFormData({...formData, role: e.target.value})}
-                      className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none appearance-none"
-                    >
-                      <option value="guest">Tamu (Read Only)</option>
-                      <option value="user">User Biasa</option>
-                      <option value="owner">Admin (Akses Penuh)</option>
-                    </select>
+                      onChange={val => setFormData({...formData, role: val})}
+                      options={[
+                        { value: 'guest', label: 'Tamu (Read Only)' },
+                        { value: 'user', label: 'User Biasa' },
+                        { value: 'owner', label: 'Admin (Akses Penuh)' }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
@@ -261,15 +278,15 @@ export default function UserManagement() {
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="text-xs text-gray-400 uppercase mb-1 block">Tamu Melihat Kebun Milik:</label>
-                      <select 
-                        value={formData.guestViewId} 
-                        onChange={e => setFormData({...formData, guestViewId: e.target.value})}
-                        className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none appearance-none"
-                      >
-                        {users.filter(u => u.role !== 'guest').map(ownerUser => (
-                          <option key={ownerUser.id} value={ownerUser.id}>{ownerUser.name} (@{ownerUser.username})</option>
-                        ))}
-                      </select>
+                      <CustomSelect 
+                        value={formData.guestViewId ? formData.guestViewId.toString() : ''} 
+                        onChange={val => setFormData({...formData, guestViewId: val})}
+                        options={users.filter(u => u.role !== 'guest').map(ownerUser => ({
+                          value: ownerUser.id.toString(),
+                          label: `${ownerUser.name} (@${ownerUser.username})`
+                        }))}
+                        className="w-full"
+                      />
                     </div>
                   </div>
                 )}

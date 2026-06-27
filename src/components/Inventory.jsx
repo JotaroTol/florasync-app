@@ -6,6 +6,7 @@ import { db } from '../db';
 import { supabase } from '../supabaseClient';
 import ImageUploader from './ImageUploader';
 import { UserContext } from '../App';
+import CustomSelect from './CustomSelect';
 
 export default function Inventory() {
   const { user } = useContext(UserContext);
@@ -512,24 +513,22 @@ export default function Inventory() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Kategori</label>
-                  <select 
-                    value={formData.category} 
-                    onChange={e => setFormData({...formData, category: e.target.value})} 
-                    className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
-                  >
-                    {categories.map(cat => <option key={cat.id || cat.name} value={cat.name}>{cat.name}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.category}
+                    onChange={val => setFormData({...formData, category: val})}
+                    options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
+                    className="w-full"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Satuan (Unit)</label>
-                  <select 
-                    value={formData.unit} 
-                    onChange={e => setFormData({...formData, unit: e.target.value})} 
-                    className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
-                    disabled={!!editingItem} // Disable changing unit if editing
-                  >
-                    {units.map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={formData.unit}
+                    onChange={val => setFormData({...formData, unit: val})}
+                    options={units.map(u => ({ value: u, label: u }))}
+                    disabled={!!editingItem}
+                    className="w-full"
+                  />
                 </div>
               </div>
 
@@ -562,15 +561,12 @@ export default function Inventory() {
                         </div>
                         <div>
                           <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">Tingkat / Golongan</label>
-                          <select 
-                            value={formData.golongan} 
-                            onChange={e => setFormData({...formData, golongan: e.target.value})} 
-                            className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2.5 text-white focus:border-amber-500 outline-none appearance-none"
-                          >
-                            {config.options.map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
+                          <CustomSelect
+                            value={formData.golongan}
+                            onChange={val => setFormData({...formData, golongan: val})}
+                            options={config.options.map(opt => ({ value: opt, label: opt }))}
+                            className="w-full"
+                          />
                         </div>
                       </div>
                     )}

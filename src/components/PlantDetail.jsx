@@ -424,6 +424,22 @@ export default function PlantDetail() {
         return;
       }
 
+      // Failsafe: Tidak bisa mencatat Panen atau Fase Generatif sebelum tanggal Pindah Tanam
+      if (plant.plantedDate && plant.plantedDate !== '-') {
+        if (new Date(selectedDateStr) < new Date(plant.plantedDate)) {
+          const hasPostPlanted = activities.some(act => 
+            act.type === 'panen' || 
+            (act.type === 'perlakuan' && ['Fase Generatif', 'Panen'].includes(act.title))
+          );
+          if (hasPostPlanted) {
+            alert("Tanggal tidak valid: Tidak bisa mencatat Panen atau Fase Generatif sebelum tanggal Pindah Tanam!");
+            isSavingRef.current = false;
+            setIsSaving(false);
+            return;
+          }
+        }
+      }
+
       // Handle Editing: Refund old stock, delete old event
       if (editingEventId) {
         const oldEvent = await db.events.get(editingEventId);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
+const CustomSelect = ({ value, onChange, options, placeholder, className, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -18,10 +18,10 @@ const CustomSelect = ({ value, onChange, options, placeholder, className }) => {
   const selectedOption = options.find(o => o.value === value);
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${className} ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={dropdownRef}>
       <div 
         className="w-full bg-forest-bg border border-white/10 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer flex justify-between items-center hover:border-emerald-500/50 transition-colors"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={value ? "text-emerald-400 font-semibold" : "text-gray-400"}>
           {selectedOption ? selectedOption.label : placeholder}
