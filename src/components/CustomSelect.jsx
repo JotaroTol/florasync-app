@@ -20,7 +20,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, className, disabl
   return (
     <div className={`relative ${className} ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={dropdownRef}>
       <div 
-        className="w-full bg-forest-bg border border-white/10 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer flex justify-between items-center hover:border-emerald-500/50 transition-colors"
+        className="w-full h-[38px] bg-forest-surface border border-white/10 rounded-lg px-3 text-sm cursor-pointer flex justify-between items-center hover:border-emerald-500/50 transition-colors"
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={value ? "text-emerald-400 font-semibold" : "text-gray-400"}>

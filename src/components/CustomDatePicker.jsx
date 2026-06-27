@@ -104,7 +104,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = 'Pilih Tanggal', disa
   return (
     <div className={`relative w-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={dropdownRef}>
       <div 
-        className="w-full bg-forest-bg border border-white/10 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer flex justify-between items-center hover:border-emerald-500/50 transition-colors animate-fade-in"
+        className="w-full h-[38px] bg-forest-surface border border-white/10 rounded-lg px-3 text-sm outline-none cursor-pointer flex justify-between items-center hover:border-emerald-500/50 transition-colors animate-fade-in"
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={value && value !== '-' ? "text-emerald-400 font-semibold text-sm" : "text-gray-400 text-sm"}>

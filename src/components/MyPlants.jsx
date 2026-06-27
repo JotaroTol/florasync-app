@@ -257,11 +257,11 @@ export default function MyPlants() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Nama Tanaman</label>
-                  <input type="text" value={editingPlant.name} onChange={e => setEditingPlant({...editingPlant, name: e.target.value})} className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none" required />
+                  <input type="text" value={editingPlant.name} onChange={e => setEditingPlant({...editingPlant, name: e.target.value})} className="w-full h-[38px] bg-forest-surface border border-white/10 rounded-lg px-3 text-white focus:border-emerald-500 outline-none" required />
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Varietas</label>
-                  <input type="text" value={editingPlant.varietas} onChange={e => setEditingPlant({...editingPlant, varietas: e.target.value})} className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none" />
+                  <input type="text" value={editingPlant.varietas} onChange={e => setEditingPlant({...editingPlant, varietas: e.target.value})} className="w-full h-[38px] bg-forest-surface border border-white/10 rounded-lg px-3 text-white focus:border-emerald-500 outline-none" />
                 </div>
               </div>
 
@@ -278,7 +278,7 @@ export default function MyPlants() {
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Populasi (Jml Pohon)</label>
-                  <input type="number" min="1" value={editingPlant.plantCount} onChange={e => setEditingPlant({...editingPlant, plantCount: e.target.value})} className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none font-mono" required />
+                  <input type="number" min="1" value={editingPlant.plantCount} onChange={e => setEditingPlant({...editingPlant, plantCount: e.target.value})} className="w-full h-[38px] bg-forest-surface border border-white/10 rounded-lg px-3 text-white focus:border-emerald-500 outline-none font-mono" required />
                 </div>
               </div>
 
