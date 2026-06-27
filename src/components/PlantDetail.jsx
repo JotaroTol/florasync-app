@@ -213,19 +213,38 @@ export default function PlantDetail() {
     days.push({ date: i, fullDate: dateStr, events: allEvents.filter(e => e.date === dateStr) });
   }
 
+  const parseLocalDate = (dateVal) => {
+    if (!dateVal || dateVal === '-') return null;
+    if (dateVal instanceof Date) return new Date(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate());
+    const parts = dateVal.split('T')[0].split('-');
+    if (parts.length !== 3) return null;
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  };
+
+  const getDayDifference = (d1, d2) => {
+    const date1 = parseLocalDate(d1);
+    const date2 = parseLocalDate(d2);
+    if (!date1 || !date2) return 0;
+    const timeDiff = date2.getTime() - date1.getTime();
+    return Math.round(timeDiff / (1000 * 60 * 60 * 24));
+  };
+
   const calculateAge = (plant) => {
     if (!plant) return '-';
     const today = new Date();
 
     if (plant.phase === 'Selesai Masa Tanam') {
       if (!plant.completedDate) return 'Selesai';
-      const end = new Date(plant.completedDate);
+      const end = plant.completedDate;
       if (plant.sownDate && plant.sownDate !== '-') {
          if (!plant.plantedDate || plant.plantedDate === '-') {
-           const diffDays = Math.ceil(Math.abs(end - new Date(plant.sownDate)) / (1000 * 60 * 60 * 24));
+           const diffDays = getDayDifference(plant.sownDate, end);
            return `${diffDays} HSS (Selesai)`;
          } else {
-           const diffDays = Math.ceil(Math.abs(end - new Date(plant.plantedDate)) / (1000 * 60 * 60 * 24));
+           const diffDays = getDayDifference(plant.plantedDate, end);
            return `${diffDays} HST (Selesai)`;
          }
       }
@@ -234,41 +253,36 @@ export default function PlantDetail() {
 
     // Jika sudah ada tanggal tanam dan tanggal tersebut sudah lewat atau hari ini, gunakan HST
     if (plant.plantedDate && plant.plantedDate !== '-') {
-      const planted = new Date(plant.plantedDate);
-      if (planted <= today) {
-        const diffTime = Math.abs(today - planted);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      const plantedDateObj = parseLocalDate(plant.plantedDate);
+      const todayMidnight = parseLocalDate(today);
+      if (plantedDateObj && plantedDateObj <= todayMidnight) {
+        const diffDays = getDayDifference(plant.plantedDate, today); 
         return `${diffDays} HST`;
       }
     }
 
     // Fallback ke HSS jika belum pindah tanam
     if (!plant.sownDate || plant.sownDate === '-') return '0 HSS';
-    const sown = new Date(plant.sownDate);
-    const diffTime = Math.abs(today - sown);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    const diffDays = getDayDifference(plant.sownDate, today); 
     return `${diffDays} HSS`;
   };
 
   const calculateSemaiDuration = (plant) => {
     if (!plant.sownDate || plant.sownDate === '-') return 0;
-    const sown = new Date(plant.sownDate);
-    const end = (plant.plantedDate && plant.plantedDate !== '-') ? new Date(plant.plantedDate) : (plant.completedDate ? new Date(plant.completedDate) : new Date());
-    return Math.ceil(Math.abs(end - sown) / (1000 * 60 * 60 * 24));
+    const end = (plant.plantedDate && plant.plantedDate !== '-') ? plant.plantedDate : (plant.completedDate ? plant.completedDate : new Date());
+    return getDayDifference(plant.sownDate, end);
   };
 
   const calculateTanamDuration = (plant) => {
     if (!plant.plantedDate || plant.plantedDate === '-') return 0;
-    const planted = new Date(plant.plantedDate);
-    const end = plant.completedDate ? new Date(plant.completedDate) : new Date();
-    return Math.ceil(Math.abs(end - planted) / (1000 * 60 * 60 * 24));
+    const end = plant.completedDate ? plant.completedDate : new Date();
+    return getDayDifference(plant.plantedDate, end);
   };
 
   const calculateTotalHSS = (plant) => {
     if (!plant.sownDate || plant.sownDate === '-') return 0;
-    const sown = new Date(plant.sownDate);
-    const end = plant.completedDate ? new Date(plant.completedDate) : new Date();
-    return Math.ceil(Math.abs(end - sown) / (1000 * 60 * 60 * 24));
+    const end = plant.completedDate ? plant.completedDate : new Date();
+    return getDayDifference(plant.sownDate, end);
   };
 
   const getReportData = () => {
