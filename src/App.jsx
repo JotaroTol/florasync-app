@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSupabaseQuery } from './hooks/useSupabaseQuery';
 import { db } from './db';
+import { supabase } from './supabaseClient';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -43,6 +44,35 @@ function AppContent({ initialUser, handleLogout }) {
   const contextUser = liveUser.role === 'guest' 
     ? { ...liveUser, id: liveUser.guestViewId || 1, originalId: liveUser.id } 
     : liveUser;
+
+  // Startup phase synchronization
+  useEffect(() => {
+    if (!contextUser || !contextUser.id) return;
+    const syncPhases = async () => {
+      try {
+        const { data: plants, error } = await supabase
+          .from('plants')
+          .select('*')
+          .eq('userId', contextUser.id)
+          .eq('phase', 'Semai');
+        if (error || !plants) return;
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        for (const plant of plants) {
+          if (plant.plantedDate && plant.plantedDate !== '-') {
+            if (plant.plantedDate <= todayStr) {
+              await supabase.from('plants').update({ phase: 'Vegetatif' }).eq('id', plant.id);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing plant phases:', err);
+      }
+    };
+    syncPhases();
+  }, [contextUser?.id]);
 
   return (
     <ErrorBoundary>

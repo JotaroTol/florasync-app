@@ -71,15 +71,33 @@ export default function MyPlants() {
         photoUrl: editingPlant.photoUrl || ''
       };
 
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
       if (editingPlant.id) {
-        await db.plants.update(editingPlant.id, dataToSave);
+        let finalPhase = editingPlant.phase;
+        if (editingPlant.phase === 'Semai' && dataToSave.plantedDate && dataToSave.plantedDate !== '-') {
+          if (dataToSave.plantedDate <= todayStr) {
+            finalPhase = 'Vegetatif';
+          }
+        }
+        await db.plants.update(editingPlant.id, {
+          ...dataToSave,
+          phase: finalPhase
+        });
       } else {
+        let finalPhase = "Semai";
+        if (dataToSave.plantedDate && dataToSave.plantedDate !== '-') {
+          if (dataToSave.plantedDate <= todayStr) {
+            finalPhase = "Vegetatif";
+          }
+        }
         await db.plants.add({
           ...dataToSave,
           userId: user.id,
-          phase: "Semai",
+          phase: finalPhase,
           status: "healthy",
-          statusText: "Baru Ditanam"
+          statusText: finalPhase === "Vegetatif" ? "Pindah Tanam" : "Baru Ditanam"
         });
       }
       setEditingPlant(null);
