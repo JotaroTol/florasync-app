@@ -6,6 +6,7 @@ import { db } from '../db';
 import { UserContext } from '../App';
 import ImageUploader from './ImageUploader';
 import CustomSelect from './CustomSelect';
+import CustomDatePicker from './CustomDatePicker';
 
 export default function MyPlants() {
   const navigate = useNavigate();
@@ -284,11 +285,19 @@ export default function MyPlants() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Tanggal Semai</label>
-                  <input type="date" value={editingPlant.sownDate} onChange={e => setEditingPlant({...editingPlant, sownDate: e.target.value})} className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none" />
+                  <CustomDatePicker
+                    value={editingPlant.sownDate}
+                    onChange={val => setEditingPlant({...editingPlant, sownDate: val})}
+                    placeholder="Pilih tgl semai"
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 uppercase mb-1 block">Tanggal Tanam</label>
-                  <input type="date" value={editingPlant.plantedDate} onChange={e => setEditingPlant({...editingPlant, plantedDate: e.target.value})} className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 outline-none" />
+                  <CustomDatePicker
+                    value={editingPlant.plantedDate}
+                    onChange={val => setEditingPlant({...editingPlant, plantedDate: val})}
+                    placeholder="Pilih tgl tanam"
+                  />
                 </div>
               </div>
 
