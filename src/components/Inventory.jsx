@@ -64,10 +64,19 @@ export default function Inventory() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState('');
   const [editCategoryProps, setEditCategoryProps] = useState([]);
+  const [editCategoryColor, setEditCategoryColor] = useState('#10b981');
 
   const getCategoryGolonganConfig = (cat) => {
     let customProps = [];
-    if (cat.sifatOptions && typeof cat.sifatOptions === 'string' && cat.sifatOptions.trim().startsWith('[')) {
+    let color = '#10b981';
+    
+    if (cat.sifatOptions && typeof cat.sifatOptions === 'string' && cat.sifatOptions.trim().startsWith('{')) {
+      try {
+        const obj = JSON.parse(cat.sifatOptions);
+        customProps = obj.props || [];
+        color = obj.color || '#10b981';
+      } catch(e) {}
+    } else if (cat.sifatOptions && typeof cat.sifatOptions === 'string' && cat.sifatOptions.trim().startsWith('[')) {
       try {
         customProps = JSON.parse(cat.sifatOptions);
       } catch(e) {}
@@ -83,6 +92,7 @@ export default function Inventory() {
     }
     
     return {
+      color,
       customProps: customProps.map(p => ({
         ...p,
         parsedOptions: p.options ? p.options.split(',').map(s => s.trim()).filter(s => s) : []
@@ -96,6 +106,7 @@ export default function Inventory() {
     
     const config = getCategoryGolonganConfig(cat);
     setEditCategoryProps(config.customProps.map(p => ({ name: p.name, options: p.options })));
+    setEditCategoryColor(config.color);
   };
 
   const handleSaveCategoryEdit = async (e) => {
@@ -113,7 +124,10 @@ export default function Inventory() {
     try {
       const updates = {
         name: nameTrimmed,
-        sifatOptions: JSON.stringify(editCategoryProps.filter(p => p.name.trim())),
+        sifatOptions: JSON.stringify({
+          color: editCategoryColor,
+          props: editCategoryProps.filter(p => p.name.trim())
+        }),
         needsSifat: editCategoryProps.length > 0
       };
       
@@ -178,7 +192,8 @@ export default function Inventory() {
     try {
       const { error } = await supabase.from('categories').insert({
         name: nameTrimmed,
-        userId: user.id
+        userId: user.id,
+        sifatOptions: JSON.stringify({ color: editCategoryColor, props: [] })
       });
       if (error) throw error;
       setNewCategoryName('');
@@ -457,13 +472,14 @@ export default function Inventory() {
                               if (item.sifat) customValues['Sifat'] = item.sifat.split(',').map(s => s.trim()).filter(s => s);
                             }
                             
-                            return Object.entries(customValues).flatMap(([propName, vals]) => 
-                              vals.map((val, idx) => (
-                                <span key={`${propName}-${idx}`} className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-emerald-400/80 border border-emerald-500/20 select-none">
-                                  <span className="opacity-50 mr-1">{propName}:</span>{val}
+                            return Object.entries(customValues).map(([propName, vals]) => {
+                              if (!vals || vals.length === 0) return null;
+                              return (
+                                <span key={propName} className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-emerald-400/80 border border-emerald-500/20 select-none">
+                                  <span className="opacity-50 mr-1">{propName}:</span>{vals.join(' dan ')}
                                 </span>
-                              ))
-                            );
+                              );
+                            });
                           })()}
                         </div>
                       </div>
@@ -766,9 +782,29 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                     />
                   </div>
                   
-                  <div className="flex flex-col gap-3">
-                    <label className="text-xs font-semibold text-gray-400 uppercase block">Atribut Tambahan Kustom</label>
-                    {editCategoryProps.map((prop, idx) => (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">Warna Kategori</label>
+                      <div className="flex gap-2">
+                        {['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'].map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setEditCategoryColor(c)}
+                            className={`w-6 h-6 rounded-full transition-all ${editCategoryColor === c ? 'scale-125 ring-2 ring-white/50' : 'hover:scale-110 opacity-70'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-gray-400 uppercase block">Atribut Tambahan Kustom</label>
+                      <div className="grid grid-cols-2 gap-2 px-1 mb-1">
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Judul / Nama Atribut</span>
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Opsi Pilihan (Gunakan Koma)</span>
+                      </div>
+                      {editCategoryProps.map((prop, idx) => (
                       <div key={idx} className="bg-black/20 border border-white/5 p-3 rounded-lg flex flex-col gap-2 relative group">
                         <button type="button" onClick={() => {
                           const newProps = [...editCategoryProps];
@@ -806,6 +842,7 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                       <Plus size={16} /> Tambah Atribut Baru
                     </button>
                   </div>
+                  </div>
 
                   <div className="flex gap-3 mt-4 pt-4 border-t border-white/10">
                     <button
@@ -828,23 +865,39 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
               ) : (
                 <div className="flex flex-col gap-5">
                   {/* Add Category Form */}
-                  <form onSubmit={handleAddCategory} className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Nama kategori baru..."
-                      value={newCategoryName}
-                      onChange={e => setNewCategoryName(e.target.value)}
-                      disabled={isSavingCategory}
-                      className="flex-1 bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSavingCategory}
-                      className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
-                    >
-                      {isSavingCategory ? '...' : 'Tambah'}
-                    </button>
+                  <form onSubmit={handleAddCategory} className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nama kategori baru..."
+                        value={newCategoryName}
+                        onChange={e => setNewCategoryName(e.target.value)}
+                        disabled={isSavingCategory}
+                        className="flex-1 bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 outline-none"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSavingCategory}
+                        className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
+                      >
+                        {isSavingCategory ? '...' : 'Tambah'}
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 px-1">
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase">Warna:</span>
+                      <div className="flex gap-1.5">
+                        {['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'].map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setEditCategoryColor(c)}
+                            className={`w-4 h-4 rounded-full transition-all ${editCategoryColor === c ? 'scale-125 ring-2 ring-white/50' : 'hover:scale-110 opacity-70'}`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </form>
 
                   {/* Categories List */}
@@ -853,23 +906,29 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                       const used = inventoryData.some(item => item.category === cat.name);
                       return (
                         <div key={cat.id || cat.name} className="flex justify-between items-center bg-forest-surface/50 border border-white/5 p-3 rounded-lg hover:bg-forest-surface transition-all">
-                          <div className="flex flex-col">
-                            <span className="text-sm text-gray-200 font-medium">{cat.name}</span>
+                          <div className="flex items-center gap-3">
                             {(() => {
                               const config = getCategoryGolonganConfig(cat);
-                              if (config.needsGolongan) {
+                              return <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: config.color }}></div>;
+                            })()}
+                            <div className="flex flex-col">
+                              <span className="text-sm text-gray-200 font-medium">{cat.name}</span>
+                              {(() => {
+                                const config = getCategoryGolonganConfig(cat);
+                                if (config.customProps && config.customProps.length > 0) {
+                                  return (
+                                    <span className="text-[10px] text-emerald-400/80 mt-0.5">
+                                      {config.customProps.map(prop => prop.name).join(', ')}
+                                    </span>
+                                  );
+                                }
                                 return (
-                                  <span className="text-[10px] text-emerald-400/80 mt-0.5">
-                                    Golongan: {config.options.join(', ') || '(Belum diatur)'}
+                                  <span className="text-[10px] text-gray-500 mt-0.5">
+                                    Tanpa Atribut Tambahan
                                   </span>
                                 );
-                              }
-                              return (
-                                <span className="text-[10px] text-gray-500 mt-0.5">
-                                  Tanpa Golongan
-                                </span>
-                              );
-                            })()}
+                              })()}
+                            </div>
                           </div>
                           <div className="flex items-center gap-1">
                             <button
