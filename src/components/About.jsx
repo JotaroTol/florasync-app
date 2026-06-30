@@ -23,7 +23,7 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">FloraSync</h2>
-              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.16) • By JotaroTol</p>
+              <p className="text-emerald-400 font-medium">Manajemen Kebun Pintar (Versi 1.1.17) • By JotaroTol</p>
             </div>
           </div>
 
@@ -49,10 +49,23 @@ export default function About() {
 
             <h3 className="text-lg font-semibold text-white mt-8 mb-3">Riwayat Pembaruan (Changelog)</h3>
             <div className="space-y-4">
-              {/* v1.1.16 - Bright Emerald (Latest) */}
+              {/* v1.1.17 - Bright Emerald (Latest) */}
               <div className="border-l-2 border-emerald-500 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-400">v1.1.16 (Penyelarasan Dimensi Input Form)</span>
+                  <span className="font-bold text-emerald-400">v1.1.17 (Perbaikan UI & Fitur Kalender-Gudang)</span>
+                  <span className="text-xs text-gray-500">30 Juni 2026</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">
+                  <li>Kategori dinamis multi-atribut di Gudang</li>
+                  <li>Fitur Salin Jadwal Antar Tanaman</li>
+                  <li>Validasi Tanggal (Failsafe) Kalender & Tanaman</li>
+                  <li>Penyelarasan antarmuka dan animasi loading</li>
+                </ul>
+              </div>
+              {/* v1.1.16 - Faded Emerald border and text (Recent) */}
+              <div className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-400/50">v1.1.16 (Penyelarasan Dimensi Input Form)</span>
                   <span className="text-xs text-gray-500">27 Juni 2026</span>
                 </div>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-400">

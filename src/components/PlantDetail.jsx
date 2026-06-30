@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { ArrowLeft, Calendar, Plus, ListTodo, History, CheckCircle2, Circle, Sprout, Tag, CalendarClock, LeafyGreen, Leaf, Flower, Apple, X, Droplet, Bug, Wind, Power, CalendarDays, Trash2, Edit2, FileText, ChevronDown, Check, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Plus, ListTodo, History, CheckCircle2, Circle, Sprout, Tag, CalendarClock, LeafyGreen, Leaf, Flower, Apple, X, Droplet, Bug, Wind, Power, CalendarDays, Trash2, Edit2, FileText, ChevronDown, Check, AlertTriangle, Copy } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { supabase } from '../supabaseClient';
@@ -23,6 +23,7 @@ export default function PlantDetail() {
     [plant?.locationId],
     true
   );
+  const allPlants = useSupabaseQuery('plants', { eq: { userId: user.id } }, [user.id]) || [];
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -82,6 +83,11 @@ export default function PlantDetail() {
 
   const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [isCopyScheduleModalOpen, setIsCopyScheduleModalOpen] = useState(false);
+  const [copyScheduleSourceEvent, setCopyScheduleSourceEvent] = useState(null);
+  const [copyTargetPlantId, setCopyTargetPlantId] = useState('');
+  const [copyTargetDate, setCopyTargetDate] = useState('');
+  const [copySelectedActivities, setCopySelectedActivities] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef = useRef(false);
   const [generalNote, setGeneralNote] = useState('');
@@ -491,7 +497,7 @@ export default function PlantDetail() {
             plantId: plant.id,
             date: checkDate,
             type: 'todo',
-            generalNote: '',
+            notes: '',
             completed: false,
             activities: [{
               type: 'perlakuan', 
@@ -516,7 +522,7 @@ export default function PlantDetail() {
                 return; // abort save entirely
               } else {
                 const filteredActs = existing.activities.filter(a => a.title !== title);
-                if (filteredActs.length === 0 && !existing.generalNote) {
+                if (filteredActs.length === 0 && !existing.notes) {
                   // Delete event if no other activities
                   await db.events.delete(existing.id);
                 } else {
@@ -536,7 +542,7 @@ export default function PlantDetail() {
         plantId: plant.id,
         date: selectedDateStr,
         type: eventType,
-        generalNote: generalNote,
+        notes: generalNote,
         completed: false,
         activities: activities
       });
@@ -558,9 +564,61 @@ export default function PlantDetail() {
   const handleEditEvent = (event) => {
     setSelectedDate(new Date(event.date));
     setActivities([...(event.activities || [])]);
-    setGeneralNote(event.generalNote || '');
+    setGeneralNote(event.notes || '');
     setEditingEventId(event.id);
     setIsAddingEvent(true);
+  };
+
+  const handleOpenCopySchedule = (event) => {
+    setCopyScheduleSourceEvent(event);
+    setCopyTargetDate(event.date);
+    setCopyTargetPlantId('');
+    setCopySelectedActivities(event.activities ? event.activities.map((_, i) => i) : []);
+    setIsCopyScheduleModalOpen(true);
+  };
+
+  const handleSaveCopySchedule = async () => {
+    if (!copyTargetPlantId) return alert("Pilih tanaman target.");
+    if (!copyTargetDate) return alert("Pilih tanggal target.");
+    if (copySelectedActivities.length === 0) return alert("Pilih setidaknya satu aktivitas untuk disalin.");
+    
+    setIsSaving(true);
+    try {
+      const targetPlant = allPlants.find(p => p.id === parseInt(copyTargetPlantId));
+      if (!targetPlant) throw new Error("Tanaman target tidak ditemukan.");
+
+      const activitiesToCopy = copySelectedActivities.map(idx => copyScheduleSourceEvent.activities[idx]);
+      
+      const { data: existingTargetEvents } = await supabase
+        .from('events')
+        .select('*')
+        .eq('plantId', targetPlant.id)
+        .eq('date', copyTargetDate);
+      
+      const existingTodo = existingTargetEvents?.find(e => e.type === 'todo');
+
+      if (existingTodo) {
+        const combined = [...(existingTodo.activities || []), ...activitiesToCopy];
+        await db.events.update(existingTodo.id, { activities: combined });
+      } else {
+        await db.events.add({
+          userId: user.id,
+          plantId: targetPlant.id,
+          date: copyTargetDate,
+          type: 'todo',
+          notes: '',
+          completed: false,
+          activities: activitiesToCopy
+        });
+      }
+      setIsCopyScheduleModalOpen(false);
+      alert("Jadwal berhasil disalin!");
+    } catch (e) {
+      console.error(e);
+      alert("Gagal menyalin jadwal.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteEvent = async (event) => {
@@ -831,6 +889,9 @@ export default function PlantDetail() {
                           </div>
                           {!isGuest && (
                             <div className="flex items-center gap-2">
+                              <button onClick={() => handleOpenCopySchedule(event)} className="text-blue-500/50 hover:text-blue-400 transition-colors" title="Salin Jadwal">
+                                <Copy size={18} />
+                              </button>
                               <button onClick={() => handleMoveDate(event.id, event.activities?.[0]?.title || event.activities?.[0]?.name || 'Tugas')} className="text-amber-500/50 hover:text-amber-400 transition-colors" title="Pindah Tanggal">
                                 <CalendarDays size={18} />
                               </button>
@@ -844,7 +905,7 @@ export default function PlantDetail() {
                           )}
                         </div>
                       )}
-                      {event.generalNote && <p className={`text-sm mb-4 italic ${event.completed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>"{event.generalNote}"</p>}
+                      {event.notes && <p className={`text-sm mb-4 italic ${event.completed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>"{event.notes}"</p>}
                       {event.activities && event.activities.length > 0 && (
                         <div className="flex flex-col gap-2">
                           {event.activities.map((act, i) => (
@@ -1195,6 +1256,91 @@ export default function PlantDetail() {
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+      {/* Modal Copy Schedule */}
+      {isCopyScheduleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-forest-bg border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-blue-400 flex items-center gap-2">
+                <Copy size={20} /> Salin Jadwal
+              </h3>
+              <button onClick={() => setIsCopyScheduleModalOpen(false)} className="text-gray-400 hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-5">
+              <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">Pilih Tanaman Target</label>
+                <CustomSelect
+                  value={copyTargetPlantId}
+                  onChange={setCopyTargetPlantId}
+                  options={[
+                    { value: '', label: '-- Pilih Tanaman --' },
+                    ...allPlants.filter(p => p.id !== plantId).map(p => ({ value: String(p.id), label: `${p.name} (${p.variety})` }))
+                  ]}
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">Pilih Tanggal Target</label>
+                <input
+                  type="date"
+                  value={copyTargetDate}
+                  onChange={(e) => setCopyTargetDate(e.target.value)}
+                  className="w-full bg-forest-surface border border-white/10 rounded-lg px-3 py-2 text-white focus:border-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">Pilih Aktivitas yang Disalin</label>
+                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-2">
+                  {copyScheduleSourceEvent?.activities?.map((act, idx) => (
+                    <label key={idx} className="flex items-start gap-3 p-2 bg-black/20 rounded-lg cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={copySelectedActivities.includes(idx)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCopySelectedActivities([...copySelectedActivities, idx]);
+                          } else {
+                            setCopySelectedActivities(copySelectedActivities.filter(i => i !== idx));
+                          }
+                        }}
+                        className="mt-1 rounded bg-forest-bg border-white/10 text-blue-600 focus:ring-0 w-4 h-4 accent-blue-500"
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-200">{act.title || act.name}</div>
+                        {act.notes && <div className="text-xs text-gray-400 truncate">{act.notes}</div>}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-4 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsCopyScheduleModalOpen(false)}
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2 bg-forest-surface text-gray-300 font-semibold rounded-lg hover:bg-white/5 transition-colors text-sm"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCopySchedule}
+                  disabled={isSaving || !copyTargetPlantId || !copyTargetDate || copySelectedActivities.length === 0}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  {isSaving ? 'Menyimpan...' : 'Salin Jadwal'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
