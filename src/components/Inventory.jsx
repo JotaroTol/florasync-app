@@ -472,11 +472,15 @@ export default function Inventory() {
                               if (item.sifat) customValues['Sifat'] = item.sifat.split(',').map(s => s.trim()).filter(s => s);
                             }
                             
+                            const catObj = categories.find(c => c.name === item.category);
+                            const catConfig = catObj ? getCategoryGolonganConfig(catObj) : { color: '#10b981' };
+                            const pillColor = catConfig.color || '#10b981';
+                            
                             return Object.entries(customValues).map(([propName, vals]) => {
                               if (!vals || vals.length === 0) return null;
                               return (
-                                <span key={propName} className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-emerald-400/80 border border-emerald-500/20 select-none">
-                                  <span className="opacity-50 mr-1">{propName}:</span>{vals.join(' dan ')}
+                                <span key={propName} className="px-2 py-0.5 rounded-full text-[10px] border select-none font-medium" style={{ color: pillColor, borderColor: pillColor + '40', backgroundColor: pillColor + '15' }}>
+                                  <span className="opacity-60 mr-1 font-normal">{propName}:</span>{vals.join(' dan ')}
                                 </span>
                               );
                             });
@@ -800,19 +804,13 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                     
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold text-gray-400 uppercase block">Atribut Tambahan Kustom</label>
-                      <div className="grid grid-cols-2 gap-2 px-1 mb-1">
+                      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 px-1 mb-1">
                         <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Judul / Nama Atribut</span>
                         <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Opsi Pilihan (Gunakan Koma)</span>
+                        <span className="w-7"></span>
                       </div>
                       {editCategoryProps.map((prop, idx) => (
-                      <div key={idx} className="bg-black/20 border border-white/5 p-3 rounded-lg flex flex-col gap-2 relative group">
-                        <button type="button" onClick={() => {
-                          const newProps = [...editCategoryProps];
-                          newProps.splice(idx, 1);
-                          setEditCategoryProps(newProps);
-                        }} className="absolute top-2 right-2 text-gray-500 hover:text-red-400">
-                          <Trash2 size={14} />
-                        </button>
+                      <div key={idx} className="bg-black/20 border border-white/5 p-2 rounded-lg grid grid-cols-[1fr_1fr_auto] gap-2 items-center group">
                         <input
                           type="text"
                           value={prop.name}
@@ -821,7 +819,7 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                             newProps[idx].name = e.target.value;
                             setEditCategoryProps(newProps);
                           }}
-                          placeholder="Nama Atribut (Misal: Golongan, Sifat)"
+                          placeholder="Misal: Golongan"
                           className="w-full bg-forest-surface border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-emerald-500 outline-none"
                           required
                         />
@@ -833,9 +831,16 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                             newProps[idx].options = e.target.value;
                             setEditCategoryProps(newProps);
                           }}
-                          placeholder="Opsi dipisahkan koma (Misal: Kontak, Sistemik)"
+                          placeholder="Misal: Kontak, Sistemik"
                           className="w-full bg-forest-surface border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-emerald-500 outline-none"
                         />
+                        <button type="button" onClick={() => {
+                          const newProps = [...editCategoryProps];
+                          newProps.splice(idx, 1);
+                          setEditCategoryProps(newProps);
+                        }} className="text-gray-500 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-colors flex items-center justify-center">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     ))}
                     <button type="button" onClick={() => setEditCategoryProps([...editCategoryProps, { name: '', options: '' }])} className="w-full py-2 border border-dashed border-white/20 rounded-lg text-emerald-500 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-2">
