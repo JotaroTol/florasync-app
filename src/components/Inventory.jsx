@@ -70,15 +70,19 @@ export default function Inventory() {
     let customProps = [];
     let color = '#10b981';
     
+    let isUserConfigured = false;
+
     if (cat.sifatOptions && typeof cat.sifatOptions === 'string' && cat.sifatOptions.trim().startsWith('{')) {
       try {
         const obj = JSON.parse(cat.sifatOptions);
         customProps = obj.props || [];
         color = obj.color || '#10b981';
+        isUserConfigured = true;
       } catch(e) {}
     } else if (cat.sifatOptions && typeof cat.sifatOptions === 'string' && cat.sifatOptions.trim().startsWith('[')) {
       try {
         customProps = JSON.parse(cat.sifatOptions);
+        isUserConfigured = true;
       } catch(e) {}
     } else {
       if (cat.needsSifat) {
@@ -86,8 +90,8 @@ export default function Inventory() {
       }
     }
     
-    // Ensure "Golongan" is always available for all categories if it doesn't exist
-    if (!customProps.some(p => p.name === 'Golongan')) {
+    // Ensure "Golongan" is available by default for legacy/unconfigured categories
+    if (!isUserConfigured && !customProps.some(p => p.name === 'Golongan')) {
       customProps.unshift({ name: 'Golongan', options: 'Ringan, Menengah, Berat' });
     }
     
