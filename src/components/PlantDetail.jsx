@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Plus, ListTodo, History, CheckCircle2, Circle, Spr
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { supabase } from '../supabaseClient';
+import { db } from '../db';
 import { UserContext } from '../App';
 import CustomSelect from './CustomSelect';
 
