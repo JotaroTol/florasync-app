@@ -554,7 +554,7 @@ export default function PlantDetail() {
       setGeneralNote(''); setActivities([]); setIsAddingEvent(false); setEditingEventId(null);
     } catch (error) {
       console.error("Error saving event:", error);
-      alert("Gagal menyimpan riwayat/jadwal. Silakan coba lagi.");
+      alert(`Gagal menyimpan riwayat/jadwal. Error: ${error.message || JSON.stringify(error)}`);
     } finally {
       isSavingRef.current = false;
       setIsSaving(false);
