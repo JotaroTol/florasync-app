@@ -99,7 +99,8 @@ export default function Inventory() {
       color,
       customProps: customProps.map(p => ({
         ...p,
-        parsedOptions: p.options ? p.options.split(',').map(s => s.trim()).filter(s => s) : []
+        parsedOptions: p.options ? p.options.split(',').map(s => s.trim()).filter(s => s) : [],
+        isMultiSelect: p.isMultiSelect !== undefined ? p.isMultiSelect : (p.name === 'Golongan' ? false : true)
       }))
     };
   };
@@ -109,7 +110,11 @@ export default function Inventory() {
     setEditCategoryName(cat.name);
     
     const config = getCategoryGolonganConfig(cat);
-    setEditCategoryProps(config.customProps.map(p => ({ name: p.name, options: p.options })));
+    setEditCategoryProps(config.customProps.map(p => ({ 
+      name: p.name, 
+      options: p.options,
+      isMultiSelect: p.isMultiSelect 
+    })));
     setEditCategoryColor(config.color);
   };
 
@@ -590,16 +595,61 @@ export default function Inventory() {
                             </div>
                             <div>
                               <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">{prop.name}</label>
-                              <CustomSelect
-                                value={(formData.customValues['Golongan'] && formData.customValues['Golongan'][0]) || ''}
-                                onChange={val => setFormData({
-                                  ...formData, 
-                                  customValues: { ...formData.customValues, 'Golongan': [val] }
-                                })}
-                                options={prop.parsedOptions.map(opt => ({ value: opt, label: opt }))}
-                                className="w-full"
-                              />
+                              {prop.isMultiSelect ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {prop.parsedOptions.map(opt => {
+                                    const currentVals = formData.customValues[prop.name] || [];
+                                    const isChecked = currentVals.includes(opt);
+                                    return (
+                                      <label key={opt} className="flex items-center gap-1.5 text-sm text-gray-200 cursor-pointer select-none">
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={e => {
+                                            const nextVals = e.target.checked
+                                              ? [...currentVals, opt]
+                                              : currentVals.filter(s => s !== opt);
+                                            setFormData({ 
+                                              ...formData, 
+                                              customValues: { ...formData.customValues, [prop.name]: nextVals }
+                                            });
+                                          }}
+                                          className="rounded bg-forest-bg border-white/10 text-amber-600 focus:ring-0 w-3 h-3 accent-amber-500"
+                                        />
+                                        <span>{opt}</span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <CustomSelect
+                                  value={(formData.customValues['Golongan'] && formData.customValues['Golongan'][0]) || ''}
+                                  onChange={val => setFormData({
+                                    ...formData, 
+                                    customValues: { ...formData.customValues, 'Golongan': [val] }
+                                  })}
+                                  options={prop.parsedOptions.map(opt => ({ value: opt, label: opt }))}
+                                  className="w-full"
+                                />
+                              )}
                             </div>
+                          </div>
+                        );
+                      }
+                      
+                      if (!prop.isMultiSelect) {
+                        return (
+                          <div key={idx}>
+                            <label className="text-xs font-semibold text-gray-400 uppercase mb-1.5 block">{prop.name}</label>
+                            <CustomSelect
+                              value={(formData.customValues[prop.name] && formData.customValues[prop.name][0]) || ''}
+                              onChange={val => setFormData({
+                                ...formData,
+                                customValues: { ...formData.customValues, [prop.name]: [val] }
+                              })}
+                              options={prop.parsedOptions.map(opt => ({ value: opt, label: opt }))}
+                              className="w-full"
+                            />
                           </div>
                         );
                       }
@@ -810,13 +860,14 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                     
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold text-gray-400 uppercase block">Atribut Tambahan Kustom</label>
-                      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 px-1 mb-1">
+                      <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-2 px-1 mb-1">
                         <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Judul / Nama Atribut</span>
                         <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Opsi Pilihan (Gunakan Koma)</span>
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider text-center" title="Bisa pilih lebih dari satu?">Multi</span>
                         <span className="w-7"></span>
                       </div>
                       {editCategoryProps.map((prop, idx) => (
-                      <div key={idx} className="bg-black/20 border border-white/5 p-2 rounded-lg grid grid-cols-[1fr_1fr_auto] gap-2 items-center group">
+                      <div key={idx} className="bg-black/20 border border-white/5 p-2 rounded-lg grid grid-cols-[1fr_1fr_auto_auto] gap-2 items-center group">
                         <input
                           type="text"
                           value={prop.name}
@@ -840,6 +891,19 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                           placeholder="Misal: Kontak, Sistemik"
                           className="w-full bg-forest-surface border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-emerald-500 outline-none"
                         />
+                        <div className="flex justify-center px-2">
+                          <input
+                            type="checkbox"
+                            checked={prop.isMultiSelect !== false}
+                            onChange={e => {
+                              const newProps = [...editCategoryProps];
+                              newProps[idx].isMultiSelect = e.target.checked;
+                              setEditCategoryProps(newProps);
+                            }}
+                            className="rounded bg-forest-bg border-white/10 text-emerald-500 focus:ring-0 w-4 h-4 accent-emerald-500 cursor-pointer"
+                            title="Centang agar atribut ini bisa dipilih lebih dari satu"
+                          />
+                        </div>
                         <button type="button" onClick={() => {
                           const newProps = [...editCategoryProps];
                           newProps.splice(idx, 1);
@@ -849,7 +913,7 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;`}
                         </button>
                       </div>
                     ))}
-                    <button type="button" onClick={() => setEditCategoryProps([...editCategoryProps, { name: '', options: '' }])} className="w-full py-2 border border-dashed border-white/20 rounded-lg text-emerald-500 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-2">
+                    <button type="button" onClick={() => setEditCategoryProps([...editCategoryProps, { name: '', options: '', isMultiSelect: true }])} className="w-full py-2 border border-dashed border-white/20 rounded-lg text-emerald-500 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-500/10 transition-colors flex items-center justify-center gap-2">
                       <Plus size={16} /> Tambah Atribut Baru
                     </button>
                   </div>
