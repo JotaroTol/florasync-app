@@ -477,11 +477,13 @@ export default function Inventory() {
                             }
                             
                             const catObj = categories.find(c => c.name === item.category);
-                            const catConfig = catObj ? getCategoryGolonganConfig(catObj) : { color: '#10b981' };
+                            const catConfig = catObj ? getCategoryGolonganConfig(catObj) : { color: '#10b981', customProps: [] };
                             const pillColor = catConfig.color || '#10b981';
+                            const validPropNames = catConfig.customProps ? catConfig.customProps.map(p => p.name) : [];
                             
                             return Object.entries(customValues).map(([propName, vals]) => {
                               if (!vals || vals.length === 0) return null;
+                              if (!validPropNames.includes(propName)) return null; // Sembunyikan properti yang sudah dihapus dari kategori
                               return (
                                 <span key={propName} className="px-2 py-0.5 rounded-full text-[10px] border select-none font-medium" style={{ color: pillColor, borderColor: pillColor + '40', backgroundColor: pillColor + '15' }}>
                                   <span className="opacity-60 mr-1 font-normal">{propName}:</span>{vals.join(' dan ')}
