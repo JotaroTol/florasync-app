@@ -873,6 +873,9 @@ export default function PlantDetail() {
                           </div>
                           {!event.isVirtual && !isGuest && (
                             <div className="flex items-center gap-2">
+                              <button onClick={() => handleOpenCopySchedule(event)} className="text-blue-500/50 hover:text-blue-400 transition-colors" title="Salin Riwayat/Jadwal">
+                                <Copy size={18} />
+                              </button>
                               <button onClick={() => handleEditEvent(event)} className="text-blue-500/50 hover:text-blue-400 transition-colors" title="Edit Riwayat">
                                 <Edit2 size={18} />
                               </button>
