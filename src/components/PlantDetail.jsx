@@ -25,6 +25,7 @@ export default function PlantDetail() {
     true
   );
   const allPlants = useSupabaseQuery('plants', { eq: { userId: user.id } }, [user.id]) || [];
+  const allLocations = useSupabaseQuery('locations', { eq: { userId: user.id } }, [user.id]) || [];
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -1285,7 +1286,10 @@ export default function PlantDetail() {
                   onChange={setCopyTargetPlantId}
                   options={[
                     { value: '', label: '-- Pilih Tanaman --' },
-                    ...allPlants.filter(p => p.id !== plantId).map(p => ({ value: String(p.id), label: `${p.name} (${p.variety})` }))
+                    ...allPlants.filter(p => p.id !== plantId).map(p => ({
+                      value: String(p.id),
+                      label: `${p.name} (${p.varietas || '-'} | Lahan: ${allLocations.find(l => String(l.id) === String(p.locationId))?.name || '?'} | ${p.plantCount || 0} Pohon)`
+                    }))
                   ]}
                   className="w-full"
                 />
