@@ -497,7 +497,7 @@ export default function PlantDetail() {
             plantId: plant.id,
             date: checkDate,
             type: 'todo',
-            generalNote: '',
+            notes: '',
             completed: false,
             activities: [{
               type: 'perlakuan', 
@@ -522,7 +522,7 @@ export default function PlantDetail() {
                 return; // abort save entirely
               } else {
                 const filteredActs = existing.activities.filter(a => a.title !== title);
-                if (filteredActs.length === 0 && !existing.generalNote) {
+                if (filteredActs.length === 0 && !existing.notes) {
                   // Delete event if no other activities
                   await db.events.delete(existing.id);
                 } else {
@@ -542,7 +542,7 @@ export default function PlantDetail() {
         plantId: plant.id,
         date: selectedDateStr,
         type: eventType,
-        generalNote: generalNote,
+        notes: generalNote,
         completed: false,
         activities: activities
       });
@@ -564,7 +564,7 @@ export default function PlantDetail() {
   const handleEditEvent = (event) => {
     setSelectedDate(new Date(event.date));
     setActivities([...(event.activities || [])]);
-    setGeneralNote(event.generalNote || '');
+    setGeneralNote(event.notes || '');
     setEditingEventId(event.id);
     setIsAddingEvent(true);
   };
@@ -606,7 +606,7 @@ export default function PlantDetail() {
           plantId: targetPlant.id,
           date: copyTargetDate,
           type: 'todo',
-          generalNote: '',
+          notes: '',
           completed: false,
           activities: activitiesToCopy
         });
@@ -905,7 +905,7 @@ export default function PlantDetail() {
                           )}
                         </div>
                       )}
-                      {event.generalNote && <p className={`text-sm mb-4 italic ${event.completed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>"{event.generalNote}"</p>}
+                      {event.notes && <p className={`text-sm mb-4 italic ${event.completed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>"{event.notes}"</p>}
                       
                       {event.activities && event.activities.length > 0 && (
                         <div className="flex flex-col gap-2">
