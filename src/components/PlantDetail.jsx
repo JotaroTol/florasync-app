@@ -597,22 +597,45 @@ export default function PlantDetail() {
         .eq('plantId', targetPlant.id)
         .eq('date', copyTargetDate);
       
-      const existingTodo = existingTargetEvents?.find(e => e.type === 'todo');
+      const isPastOrTodayDate = () => {
+        const d = new Date(copyTargetDate);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        d.setHours(0,0,0,0);
+        return d <= today;
+      };
+      const copyType = isPastOrTodayDate() ? 'history' : 'todo';
+      const isCompleted = copyType === 'history';
 
-      if (existingTodo) {
-        const combined = [...(existingTodo.activities || []), ...activitiesToCopy];
-        await db.events.update(existingTodo.id, { activities: combined });
+      const existingEvent = existingTargetEvents?.find(e => e.type === copyType);
+
+      if (existingEvent) {
+        const combined = [...(existingEvent.activities || []), ...activitiesToCopy];
+        await db.events.update(existingEvent.id, { activities: combined });
       } else {
         await db.events.add({
           userId: user.id,
           plantId: targetPlant.id,
           date: copyTargetDate,
-          type: 'todo',
+          type: copyType,
           notes: '',
-          completed: false,
+          completed: isCompleted,
           activities: activitiesToCopy
         });
       }
+
+      // Deduct stock if saving as history
+      if (copyType === 'history') {
+        for (const act of activitiesToCopy) {
+          if (act.type === 'produk' && act.productId) {
+            const item = await db.inventory.get(act.productId);
+            if (item) {
+              await db.inventory.update(item.id, { stock: Math.max(0, item.stock - act.totalDose) });
+            }
+          }
+        }
+      }
+      
       setIsCopyScheduleModalOpen(false);
       alert("Jadwal berhasil disalin!");
     } catch (e) {
@@ -903,7 +926,7 @@ export default function PlantDetail() {
                               <button onClick={async () => { if(window.confirm('Hapus jadwal ini?')) await db.events.delete(event.id); }} className="text-red-500/50 hover:text-red-400 transition-colors" title="Hapus Jadwal">
                                 <Trash2 size={18} />
                               </button>
-                              <button onClick={() => toggleTodoComplete(event.id, !event.completed)} className="text-gray-500 hover:text-emerald-400 transition-colors" title="Tandai Selesai/Belum">
+                              <button onClick={() => toggleTodoComplete(event.id, event.completed)} className="text-gray-500 hover:text-emerald-400 transition-colors" title="Tandai Selesai/Belum">
                                 {event.completed ? <CheckCircle2 size={22} className="text-emerald-500" /> : <Circle size={22} />}
                               </button>
                             </div>
