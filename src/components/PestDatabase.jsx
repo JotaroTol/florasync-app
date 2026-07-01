@@ -17,19 +17,15 @@ export default function PestDatabase() {
   const getCategoryGolonganConfig = (catName) => {
     const catObj = categories.find(c => c.name === catName);
     if (catObj) {
-      const needsGolonganDefault = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(catObj.name);
-      const needsGolongan = catObj.needsGolongan !== undefined && catObj.needsGolongan !== null ? catObj.needsGolongan : needsGolonganDefault;
-      
-      const optionsDefault = needsGolongan ? 'Ringan, Menengah, Berat' : '';
+      const needsGolongan = true;
+      const optionsDefault = 'Ringan, Menengah, Berat';
       const optionsStr = catObj.golonganOptions !== undefined && catObj.golonganOptions !== null ? catObj.golonganOptions : optionsDefault;
       
       const options = optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(s => s) : [];
       return { needsGolongan, options };
     }
     
-    const needsGolongan = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(catName);
-    const options = needsGolongan ? ['Ringan', 'Menengah', 'Berat'] : [];
-    return { needsGolongan, options };
+    return { needsGolongan: true, options: ['Ringan', 'Menengah', 'Berat'] };
   };
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);

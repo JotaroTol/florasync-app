@@ -81,14 +81,14 @@ export default function Inventory() {
         customProps = JSON.parse(cat.sifatOptions);
       } catch(e) {}
     } else {
-      // Legacy handling
-      const needsGolonganDefault = ['Insektisida', 'Fungisida', 'Herbisida', 'Pestisida'].includes(cat.name);
-      if (needsGolonganDefault) {
-        customProps.push({ name: 'Golongan', options: 'Ringan, Menengah, Berat' });
-      }
       if (cat.needsSifat) {
         customProps.push({ name: 'Sifat', options: cat.sifatOptions || '' });
       }
+    }
+    
+    // Ensure "Golongan" is always available for all categories if it doesn't exist
+    if (!customProps.some(p => p.name === 'Golongan')) {
+      customProps.unshift({ name: 'Golongan', options: 'Ringan, Menengah, Berat' });
     }
     
     return {
